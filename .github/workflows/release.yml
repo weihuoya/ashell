@@ -34,7 +34,7 @@ jobs:
             target: aarch64-apple-darwin
             name: macos-aarch64
             bin: ashell
-          - os: macos-13               # Intel
+          - os: macos-14               # Intel (cross-compiled from Apple Silicon to avoid queue delays)
             target: x86_64-apple-darwin
             name: macos-x86_64
             bin: ashell
