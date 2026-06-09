@@ -10,7 +10,7 @@ This project focuses on providing a high-performance and visually appealing shel
 
 ## Download
 
-You can download the latest pre-compiled releases for macOS and Windows from the [GitHub Releases page](https://github.com/rust-kotlin/ashell/releases/latest).
+You can download the latest pre-compiled releases for macOS, Windows, and Linux from the [GitHub Releases page](https://github.com/rust-kotlin/ashell/releases/latest).
 
 ## Mac Installation Guide
 

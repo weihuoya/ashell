@@ -13,6 +13,7 @@ use std::{
 use alacritty_terminal::index::Side;
 use alacritty_terminal::selection::SelectionType;
 use anyhow::{Context as _, Result};
+use rust_i18n::t;
 use gpui::{
     Anchor, App, AppContext as _, Bounds, ClipboardItem, Context, ElementId, Entity, FocusHandle,
     Focusable as _, FontWeight, Hsla, InteractiveElement as _, IntoElement, KeyBinding,
@@ -203,14 +204,14 @@ struct SftpContextMenuState {
 impl Ashell {
     fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let host_input =
-            cx.new(|cx| InputState::new(window, cx).placeholder(rust_i18n::t!("host")));
+            cx.new(|cx| InputState::new(window, cx).placeholder(t!("host")));
         let session_name_input =
             cx.new(|cx| InputState::new(window, cx).placeholder("name (optional)"));
         let port_input = cx.new(|cx| InputState::new(window, cx).default_value("22"));
         let user_input = cx.new(|cx| InputState::new(window, cx).default_value("root"));
         let password_input = cx.new(|cx| {
             InputState::new(window, cx)
-                .placeholder(rust_i18n::t!("password"))
+                .placeholder(t!("password"))
                 .masked(true)
         });
         let key_path_input =
@@ -469,7 +470,7 @@ impl Ashell {
                             progress.lines.push(reason.clone().into());
                             let _ = session_label;
                             let _ = tab_title;
-                            progress.title = rust_i18n::t!("connection_failed").into();
+                            progress.title = t!("connection_failed").into();
                             progress.failed = true;
                         }
                     }
@@ -580,7 +581,7 @@ impl Ashell {
         let key_inline = self.key_inline_input.read(cx).value().to_string();
 
         if host.is_empty() || user.is_empty() {
-            self.status = rust_i18n::t!("host_and_user_required").into();
+            self.status = t!("host_and_user_required").into();
             cx.notify();
             return;
         }
@@ -721,7 +722,7 @@ impl Ashell {
 
         window.open_dialog(cx, move |dialog: Dialog, _window, _cx| {
             dialog
-                .title(rust_i18n::t!("new_ssh_connection"))
+                .title(t!("new_ssh_connection"))
                 .w(px(520.))
                 .overlay_closable(true)
                 .content({
@@ -752,7 +753,7 @@ impl Ashell {
                                         .gap_2()
                                         .child(
                                             Button::new("ssh-auth-password")
-                                                .label(rust_i18n::t!("password").to_string())
+                                                .label(t!("password").to_string())
                                                 .when(is_password, |button| button.primary())
                                                 .on_click(window.listener_for(
                                                     &view,
@@ -766,7 +767,7 @@ impl Ashell {
                                         )
                                         .child(
                                             Button::new("ssh-auth-key")
-                                                .label(rust_i18n::t!("key").to_string())
+                                                .label(t!("key").to_string())
                                                 .when(!is_password, |button| button.primary())
                                                 .on_click(window.listener_for(
                                                     &view,
@@ -795,16 +796,16 @@ impl Ashell {
                                         .gap_2()
                                         .child(
                                             Button::new("connect-ssh-cancel")
-                                                .label(rust_i18n::t!("cancel").to_string())
+                                                .label(t!("cancel").to_string())
                                                 .on_click(|_, window, cx| window.close_dialog(cx)),
                                         )
                                         .child(
                                             Button::new("connect-ssh-confirm")
                                                 .primary()
                                                 .label(if is_editing {
-                                                    rust_i18n::t!("save")
+                                                    t!("save")
                                                 } else {
-                                                    rust_i18n::t!("connect")
+                                                    t!("connect")
                                                 })
                                                 .on_click(window.listener_for(
                                                     &view,
@@ -892,13 +893,13 @@ impl Ashell {
                                                     div()
                                                         .text_size(px(12.))
                                                         .font_weight(FontWeight::SEMIBOLD)
-                                                        .child(rust_i18n::t!("local_terminal")),
+                                                        .child(t!("local_terminal")),
                                                 )
                                                 .child(
                                                     div()
                                                         .text_size(px(11.))
                                                         .text_color(_cx.theme().muted_foreground)
-                                                        .child(rust_i18n::t!(
+                                                        .child(t!(
                                                             "open_local_shell_tab"
                                                         )),
                                                 ),
@@ -936,13 +937,13 @@ impl Ashell {
                                                     div()
                                                         .text_size(px(12.))
                                                         .font_weight(FontWeight::SEMIBOLD)
-                                                        .child(rust_i18n::t!("new_ssh_connection")),
+                                                        .child(t!("new_ssh_connection")),
                                                 )
                                                 .child(
                                                     div()
                                                         .text_size(px(11.))
                                                         .text_color(_cx.theme().muted_foreground)
-                                                        .child(rust_i18n::t!(
+                                                        .child(t!(
                                                             "create_or_edit_ssh_session"
                                                         )),
                                                 ),
@@ -1030,7 +1031,7 @@ impl Ashell {
         let view = cx.entity();
         window.open_dialog(cx, move |dialog: Dialog, _window, _| {
             dialog
-                .title(rust_i18n::t!("settings").to_string())
+                .title(t!("settings").to_string())
                 .w(px(480.))
                 .content({
                     let view = view.clone();
@@ -1042,7 +1043,7 @@ impl Ashell {
                                     h_flex()
                                         .items_center()
                                         .gap_3()
-                                        .child(div().w(px(180.)).child(rust_i18n::t!("terminal_font_size").to_string()))
+                                        .child(div().w(px(180.)).child(t!("terminal_font_size").to_string()))
                                         .child(
                                             Button::new("font-size-down")
                                                 .label("-")
@@ -1068,7 +1069,7 @@ impl Ashell {
                                     h_flex()
                                         .items_center()
                                         .gap_3()
-                                        .child(div().w(px(180.)).child(rust_i18n::t!("language").to_string()))
+                                        .child(div().w(px(180.)).child(t!("language").to_string()))
                                         .child(
                                             Button::new("language-dropdown")
                                                 .small()
@@ -1076,11 +1077,11 @@ impl Ashell {
                                                 .label({
                                                     let current_locale = view.read(cx).config.locale().to_string();
                                                     if current_locale == "en" {
-                                                        rust_i18n::t!("english").to_string()
+                                                        t!("english").to_string()
                                                     } else if current_locale == "zh-CN" {
-                                                        rust_i18n::t!("chinese").to_string()
+                                                        t!("chinese").to_string()
                                                     } else {
-                                                        rust_i18n::t!("follow_system").to_string()
+                                                        t!("follow_system").to_string()
                                                     }
                                                 })
                                                 .dropdown_menu_with_anchor(Anchor::BottomRight, {
@@ -1090,7 +1091,7 @@ impl Ashell {
                                                         menu = menu
                                                             .min_w(160.)
                                                             .item(
-                                                                PopupMenuItem::new(rust_i18n::t!("follow_system").to_string())
+                                                                PopupMenuItem::new(t!("follow_system").to_string())
                                                                     .checked(current_locale == "system")
                                                                     .on_click(window.listener_for(&view, |this, _, window, cx| {
                                                                         this.set_display_language("system", window, cx)
@@ -1098,14 +1099,14 @@ impl Ashell {
                                                             )
                                                             .separator()
                                                             .item(
-                                                                PopupMenuItem::new(rust_i18n::t!("english").to_string())
+                                                                PopupMenuItem::new(t!("english").to_string())
                                                                     .checked(current_locale == "en")
                                                                     .on_click(window.listener_for(&view, |this, _, window, cx| {
                                                                         this.set_display_language("en", window, cx)
                                                                     })),
                                                             )
                                                             .item(
-                                                                PopupMenuItem::new(rust_i18n::t!("chinese").to_string())
+                                                                PopupMenuItem::new(t!("chinese").to_string())
                                                                     .checked(current_locale == "zh-CN")
                                                                     .on_click(window.listener_for(&view, |this, _, window, cx| {
                                                                         this.set_display_language("zh-CN", window, cx)
@@ -1120,7 +1121,7 @@ impl Ashell {
                                     div()
                                         .text_size(px(12.))
                                         .text_color(cx.theme().muted_foreground)
-                                        .child(rust_i18n::t!("theme_management_hint")),
+                                        .child(t!("theme_management_hint")),
                                 ),
                         )
                     }
@@ -1250,8 +1251,8 @@ impl Ashell {
         self.pending_sftp_path_sync = Some("/".into());
         self.connection_progress = Some(ConnectionProgress {
             tab_id: id,
-            title: rust_i18n::t!("connecting").into(),
-            lines: vec![rust_i18n::t!("starting_connection").into()],
+            title: t!("connecting").into(),
+            lines: vec![t!("starting_connection").into()],
             failed: false,
         });
         self.status = "ssh tab opened".into();
@@ -2009,7 +2010,7 @@ impl Ashell {
                 div()
                     .text_size(px(13.))
                     .text_color(cx.theme().muted_foreground)
-                    .child(rust_i18n::t!("open_local_or_ssh")),
+                    .child(t!("open_local_or_ssh")),
             )
             .child(
                 h_flex()
@@ -2017,13 +2018,13 @@ impl Ashell {
                     .child(
                         Button::new("home-open-local")
                             .primary()
-                            .label(rust_i18n::t!("local_terminal").to_string())
+                            .label(t!("local_terminal").to_string())
                             .on_click(cx.listener(|this, _, _, cx| this.open_local(cx))),
                     )
                     .child(
                         Button::new("home-open-session")
                             .ghost()
-                            .label(rust_i18n::t!("open_session").to_string())
+                            .label(t!("open_session").to_string())
                             .on_click(cx.listener(|this, _, window, cx| {
                                 this.show_selector_dialog(window, cx)
                             })),
@@ -2067,7 +2068,7 @@ impl Ashell {
             .as_ref()
             .and_then(|id| self.tabs.iter().find(|t| &t.id == id))
             .map(|t| t.title.clone())
-            .unwrap_or_else(|| rust_i18n::t!("idle_no_session").into())
+            .unwrap_or_else(|| t!("idle_no_session").into())
     }
 
     fn active_ssh_session(&self) -> Option<(String, Session)> {
@@ -2197,14 +2198,14 @@ impl Ashell {
                             .text_size(px(12.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .text_color(cx.theme().chart_4)
-                            .child(rust_i18n::t!("net")),
+                            .child(t!("net")),
                     )
                     .child(div().flex_1())
                     .child(
                         div()
                             .text_size(px(11.))
                             .text_color(cx.theme().muted_foreground)
-                            .child(rust_i18n::t!("live")),
+                            .child(t!("live")),
                     ),
             )
             .child(
@@ -2415,28 +2416,28 @@ impl Ashell {
                 menu = menu
                     .min_w(220.)
                     .item(
-                        PopupMenuItem::new(rust_i18n::t!("follow_system"))
+                        PopupMenuItem::new(t!("follow_system"))
                             .checked(follow_system)
                             .on_click(window.listener_for(&view, |this, _, window, cx| {
                                 this.set_follow_system_theme(true, window, cx)
                             })),
                     )
                     .item(
-                        PopupMenuItem::new(rust_i18n::t!("use_light_mode"))
+                        PopupMenuItem::new(t!("use_light_mode"))
                             .checked(!follow_system && !is_dark_mode)
                             .on_click(window.listener_for(&view, |this, _, window, cx| {
                                 this.switch_theme_mode(ThemeMode::Light, window, cx)
                             })),
                     )
                     .item(
-                        PopupMenuItem::new(rust_i18n::t!("use_dark_mode"))
+                        PopupMenuItem::new(t!("use_dark_mode"))
                             .checked(!follow_system && is_dark_mode)
                             .on_click(window.listener_for(&view, |this, _, window, cx| {
                                 this.switch_theme_mode(ThemeMode::Dark, window, cx)
                             })),
                     )
                     .separator()
-                    .label(rust_i18n::t!("light_theme").to_string());
+                    .label(t!("light_theme").to_string());
 
                 for theme_name in light_themes.clone() {
                     let checked = theme_name == light_theme_name;
@@ -2450,7 +2451,7 @@ impl Ashell {
                 }
 
                 menu = menu.separator();
-                menu = menu.label(rust_i18n::t!("dark_theme").to_string());
+                menu = menu.label(t!("dark_theme").to_string());
 
                 for theme_name in dark_themes.clone() {
                     let checked = theme_name == dark_theme_name;
@@ -2484,13 +2485,13 @@ impl Ashell {
                         .text_size(px(12.))
                         .font_weight(FontWeight::SEMIBOLD)
                         .text_color(cx.theme().primary)
-                        .child(rust_i18n::t!("remote_files")),
+                        .child(t!("remote_files")),
                 )
                 .child(
                     div()
                         .text_size(px(12.))
                         .text_color(cx.theme().muted_foreground)
-                        .child(rust_i18n::t!("open_ssh_tab_sftp")),
+                        .child(t!("open_ssh_tab_sftp")),
                 );
         };
 
@@ -2542,7 +2543,7 @@ impl Ashell {
                             .text_size(px(12.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .text_color(cx.theme().primary)
-                            .child(rust_i18n::t!("remote_files")),
+                            .child(t!("remote_files")),
                     )
                     .child(div().flex_1())
                     .child(
@@ -2550,7 +2551,7 @@ impl Ashell {
                             .ghost()
                             .small()
                             .icon(IconName::ArrowRight)
-                            .label(rust_i18n::t!("refresh").to_string())
+                            .label(t!("refresh").to_string())
                             .on_click(cx.listener(|this, _, _, cx| this.refresh_sftp(cx))),
                     )
                     .child(
@@ -2558,7 +2559,7 @@ impl Ashell {
                             .ghost()
                             .small()
                             .icon(IconName::Plus)
-                            .label(rust_i18n::t!("upload_file").to_string())
+                            .label(t!("upload_file").to_string())
                             .on_click(cx.listener(|this, _, window, cx| {
                                 this.upload_sftp_files(window, cx)
                             })),
@@ -2568,7 +2569,7 @@ impl Ashell {
                             .ghost()
                             .small()
                             .icon(IconName::Folder)
-                            .label(rust_i18n::t!("upload_folder").to_string())
+                            .label(t!("upload_folder").to_string())
                             .on_click(cx.listener(|this, _, window, cx| {
                                 this.upload_sftp_folder(window, cx)
                             })),
@@ -2579,9 +2580,9 @@ impl Ashell {
                             .small()
                             .icon(IconName::ArrowDown)
                             .label(if selected_entries.is_empty() {
-                                rust_i18n::t!("download").to_string()
+                                t!("download").to_string()
                             } else {
-                                rust_i18n::t!("download_count", count = selected_entries.len()).to_string()
+                                t!("download_count", count = selected_entries.len()).to_string()
                             })
                             .disabled(selected_entries.is_empty())
                             .on_click(cx.listener(|this, _, window, cx| {
@@ -2591,7 +2592,7 @@ impl Ashell {
                     .child(
                         Checkbox::new("sftp-show-hidden")
                             .small()
-                            .label(rust_i18n::t!("hidden").to_string())
+                            .label(t!("hidden").to_string())
                             .checked(self.show_hidden_files)
                             .tab_stop(false)
                             .on_click(cx.listener(|this, checked, _, cx| {
@@ -2656,7 +2657,7 @@ impl Ashell {
                                     .flex_1()
                                     .text_size(px(11.))
                                     .text_color(cx.theme().muted_foreground)
-                                    .child(rust_i18n::t!("name")),
+                                    .child(t!("name")),
                             ),
                     )
                     .child(
@@ -2665,7 +2666,7 @@ impl Ashell {
                             .flex_none()
                             .text_size(px(11.))
                             .text_color(cx.theme().muted_foreground)
-                            .child(rust_i18n::t!("size")),
+                            .child(t!("size")),
                     )
                     .child(
                         div()
@@ -2673,7 +2674,7 @@ impl Ashell {
                             .flex_none()
                             .text_size(px(11.))
                             .text_color(cx.theme().muted_foreground)
-                            .child(rust_i18n::t!("modified")),
+                            .child(t!("modified")),
                     )
                     .child(div().w(px(12.)).flex_none()),
             )
@@ -2917,7 +2918,7 @@ impl Ashell {
                                     .child({
                                         if let Some(kind) = self.active_kind() {
                                             let kind_str = match kind {
-                                                TabKind::Local => rust_i18n::t!("local_terminal").to_string(),
+                                                TabKind::Local => t!("local_terminal").to_string(),
                                                 TabKind::Ssh => "ssh".to_string(),
                                             };
                                             format!("{} / {}", kind_str, self.active_title())
@@ -2939,7 +2940,7 @@ impl Ashell {
                                     .text_size(px(12.))
                                     .font_weight(FontWeight::SEMIBOLD)
                                     .text_color(cx.theme().primary)
-                                    .child(rust_i18n::t!("system")),
+                                    .child(t!("system")),
                             )
                             .child(div().flex_1())
                             .child(
@@ -2958,21 +2959,21 @@ impl Ashell {
                         )
                     })
                     .child(self.system_card(
-                        rust_i18n::t!("cpu").to_string(),
+                        t!("cpu").to_string(),
                         self.system.cpu_percent,
-                        rust_i18n::t!("global_load").into(),
+                        t!("global_load").into(),
                         cx.theme().chart_1,
                         cx,
                     ))
                     .child(self.system_card(
-                        rust_i18n::t!("mem").to_string(),
+                        t!("mem").to_string(),
                         self.system.mem_percent,
                         self.system.mem_detail.clone(),
                         cx.theme().chart_2,
                         cx,
                     ))
                     .child(self.system_card(
-                        rust_i18n::t!("swap").to_string(),
+                        t!("swap").to_string(),
                         self.system.swap_percent,
                         self.system.swap_detail.clone(),
                         cx.theme().chart_3,
@@ -2991,7 +2992,7 @@ impl Ashell {
                                 div()
                                     .text_size(px(11.))
                                     .text_color(cx.theme().chart_5)
-                                    .child(rust_i18n::t!("disk")),
+                                    .child(t!("disk")),
                             )
                             .children({
                                 let mut disk_elements = Vec::new();
@@ -3005,7 +3006,7 @@ impl Ashell {
             .child(
                 Button::new("open-ssh-panel")
                     .primary()
-                    .label(rust_i18n::t!("add_ssh").to_string())
+                    .label(t!("add_ssh").to_string())
                     .on_click(
                         cx.listener(|this, _, window, cx| this.open_new_ssh_dialog(window, cx)),
                     ),
@@ -3018,7 +3019,7 @@ impl Ashell {
                             .text_size(px(12.))
                             .font_weight(FontWeight::SEMIBOLD)
                             .text_color(cx.theme().primary)
-                            .child(rust_i18n::t!("saved")),
+                            .child(t!("saved")),
                     )
                     .child(
                         v_flex()
