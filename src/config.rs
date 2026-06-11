@@ -109,6 +109,8 @@ pub struct ConfigFile {
     pub terminal_font_size: f32,
     #[serde(default = "default_ui_font_size")]
     pub ui_font_size: f32,
+    #[serde(default)]
+    pub right_click_copy_paste: bool,
     #[serde(default = "default_ui_font_family")]
     pub ui_font_family: String,
     #[serde(default = "default_terminal_font_family")]
@@ -300,6 +302,14 @@ impl ConfigStore {
 
     pub fn set_ui_font_family(&mut self, family: &str) {
         self.cache.ui_font_family = family.to_string();
+    }
+
+    pub fn right_click_copy_paste(&self) -> bool {
+        self.cache.right_click_copy_paste
+    }
+
+    pub fn set_right_click_copy_paste(&mut self, val: bool) {
+        self.cache.right_click_copy_paste = val;
     }
 
     pub fn terminal_font_family(&self) -> &str {

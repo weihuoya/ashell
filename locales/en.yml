@@ -92,3 +92,6 @@ cancelled: "Cancelled"
 session: "Session"
 
 software_builtin: "Built-in"
+retry: "Retry"
+right_click_copy_paste: "Right-click Copy/Paste"
+copy_paste_hint: "Tip: Regardless of this switch, you can always use %{key} + C/V to copy/paste."

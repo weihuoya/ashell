@@ -16,6 +16,7 @@ The brand-new v0.3 introduces comprehensive upgrades to both architecture and us
 - ✨ **Persistent Workspace State**: Your sidebar width adjustments, terminal themes, font settings, and file visibility preferences are completely restored upon your next launch!
 - ✨ **Intelligent SSH Disconnect/Reconnect**: Greatly enhanced SSH connection resilience. Provides a beautiful and localized overlay for one-click re-connection on unexpected disconnections.
 - ✨ **Hot-Swappable i18n System**: Deeply optimized internationalization. Switch instantly between English and Simplified Chinese without restarting the application.
+- ✨ **Smart Right-Click Actions**: Added intelligent right-click copy and paste for the terminal, featuring a dedicated settings toggle and OS-native keyboard shortcut hints.
 
 ## Download
 

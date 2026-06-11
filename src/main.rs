@@ -26,6 +26,7 @@ use gpui_component::{
     ThemeRegistry, WindowExt as _,
     button::{Button, ButtonVariants as _},
     checkbox::Checkbox,
+    switch::Switch,
     dialog::Dialog,
     h_flex,
     input::{Input, InputEvent, InputState},
@@ -939,7 +940,7 @@ impl Ashell {
         self.selector_selection = self.default_selector_index();
         window.open_dialog(cx, move |dialog: Dialog, _window, _| {
             dialog
-                .title("Open Session")
+                .title(t!("open_session").to_string())
                 .w(px(520.))
                 .on_ok({
                     let view = view.clone();
@@ -1615,6 +1616,34 @@ impl Ashell {
                                                     },
                                                 ),
                                         ),
+                                )
+                                .child(
+                                    v_flex()
+                                        .gap_1()
+                                        .child(
+                                            h_flex()
+                                                .items_center()
+                                                .gap_3()
+                                                .child(div().w(px(240.)).child(t!("right_click_copy_paste").to_string()))
+                                                .child(
+                                                    Switch::new("right-click-copy-paste")
+                                                        .checked(view.read(cx).config.right_click_copy_paste())
+                                                        .on_click(window.listener_for(
+                                                            &view,
+                                                            |this, checked, _, cx| {
+                                                                this.config.set_right_click_copy_paste(*checked);
+                                                                let _ = this.config.save();
+                                                                cx.notify();
+                                                            },
+                                                        )),
+                                                )
+                                        )
+                                        .child(
+                                            div()
+                                                .text_size(rems(0.85))
+                                                .text_color(cx.theme().muted_foreground)
+                                                .child(t!("copy_paste_hint", key = if cfg!(target_os = "macos") { "Command" } else { "Ctrl" }).to_string())
+                                        )
                                 )
                                 .child(
                                     h_flex()
@@ -2497,6 +2526,43 @@ impl Ashell {
             self.begin_terminal_selection(event, cx);
         }
         cx.notify();
+    }
+
+    fn on_terminal_right_click(
+        &mut self,
+        _event: &MouseDownEvent,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if !self.config.right_click_copy_paste() {
+            return;
+        }
+
+        let mut handled = false;
+        if let Some(text) = self.active_terminal_selection_text() {
+            if !text.is_empty() {
+                cx.write_to_clipboard(gpui::ClipboardItem::new_string(text));
+                
+                let active_id = self.active_tab.clone();
+                if let Some(active_id) = active_id {
+                    if let Some(tab) = self.tabs.iter_mut().find(|tab| tab.id == active_id) {
+                        tab.clear_selection();
+                    }
+                }
+                cx.notify();
+                handled = true;
+            }
+        }
+        
+        if !handled {
+            if let Some(clipboard_item) = cx.read_from_clipboard() {
+                if let Some(text) = clipboard_item.text() {
+                    if !text.is_empty() {
+                        self.paste_into_terminal(&text, window, cx);
+                    }
+                }
+            }
+        }
     }
 
     fn begin_terminal_selection(&mut self, event: &MouseDownEvent, cx: &mut Context<Self>) {
@@ -3913,6 +3979,7 @@ impl Render for Ashell {
                                             .track_focus(&self.focus_handle)
                                             .key_context(TERMINAL_KEY_CONTEXT)
                                             .on_mouse_down(MouseButton::Left, cx.listener(Self::focus_terminal))
+                                            .on_mouse_down(MouseButton::Right, cx.listener(Self::on_terminal_right_click))
                                             .on_mouse_move(cx.listener(Self::on_terminal_mouse_move))
                                             .on_mouse_up(MouseButton::Left, cx.listener(Self::on_terminal_mouse_up))
                                             .on_key_down(cx.listener(Self::on_terminal_key_down))
@@ -4082,14 +4149,14 @@ impl Render for Ashell {
                                                     .child(
                                                         Button::new("ssh-connect-progress-retry")
                                                             .primary()
-                                                            .label("retry")
+                                                            .label(t!("retry").to_string())
                                                             .on_click(cx.listener(|this, _, _, cx| {
                                                                 this.retry_connection_progress(cx)
                                                             })),
                                                     )
                                                     .child(
                                                         Button::new("ssh-connect-progress-close")
-                                                            .label("cancel")
+                                                            .label(t!("cancel").to_string())
                                                             .on_click(cx.listener(|this, _, _, cx| {
                                                                 this.cancel_connection_progress(cx)
                                                             })),

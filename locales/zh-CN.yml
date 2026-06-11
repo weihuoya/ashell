@@ -92,3 +92,6 @@ cancelled: "已取消"
 session: "会话"
 
 software_builtin: "软件内置"
+retry: "重试"
+right_click_copy_paste: "右键复制/粘贴"
+copy_paste_hint: "提示：不管是否开启此开关，都可以使用 %{key} + C/V 快捷键进行复制和粘贴。"
