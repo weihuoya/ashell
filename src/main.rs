@@ -71,7 +71,7 @@ fn load_embedded_themes(cx: &mut App) {
 #[cfg(target_os = "macos")]
 fn sync_macos_launch_environment() {
     let shell = std::env::var("SHELL").unwrap_or_else(|_| "/bin/zsh".to_string());
-    let Ok(output) = Command::new(&shell).args(["-l", "-c", "env -0"]).output() else {
+    let Ok(output) = std::process::Command::new(&shell).args(["-l", "-c", "env -0"]).output() else {
         return;
     };
     if !output.status.success() {
@@ -240,7 +240,7 @@ fn main() {
     #[cfg(target_os = "macos")]
     let app = gpui_platform::application()
         .with_assets(Assets)
-        .with_quit_mode(QuitMode::Explicit);
+        .with_quit_mode(gpui::QuitMode::Explicit);
 
     #[cfg(not(target_os = "macos"))]
     let app = gpui_platform::application().with_assets(Assets);

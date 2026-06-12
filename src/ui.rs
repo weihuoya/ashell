@@ -180,6 +180,8 @@ impl Ashell {
                         .tab_stop(false)
                         .on_click(cx.listener(|this, checked, _, cx| {
                             this.show_hidden_files = *checked;
+                            this.config.set_show_hidden_files(*checked);
+                            let _ = this.config.save();
                             cx.notify();
                         })),
                 )
