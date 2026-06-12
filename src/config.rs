@@ -259,6 +259,7 @@ impl ConfigStore {
         self.cache.workspace_panels.as_ref()
     }
 
+    #[allow(dead_code)]
     pub fn body_panels(&self) -> Option<&Vec<f32>> {
         self.cache.body_panels.as_ref()
     }

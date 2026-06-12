@@ -217,7 +217,7 @@ impl Ashell {
                             this.sftp_panel_minimized = false;
                             let prev_size = this.prev_monitoring_size.unwrap_or(px(328.));
                             
-                            cx.on_next_frame(window, move |this: &mut crate::app::Ashell, window: &mut gpui::Window, cx: &mut gpui::Context<crate::app::Ashell>| {
+                            cx.on_next_frame(window, move |_this: &mut crate::app::Ashell, window: &mut gpui::Window, cx: &mut gpui::Context<crate::app::Ashell>| {
                                 cx.on_next_frame(window, move |this: &mut crate::app::Ashell, window: &mut gpui::Window, cx: &mut gpui::Context<crate::app::Ashell>| {
                                     this.body_panels.update(cx, |state, cx| {
                                         let sizes = state.sizes();
@@ -785,25 +785,27 @@ impl Ashell {
                             .child(mem_detail),
                     ),
             )
-            .child(
-                h_flex()
-                    .w_full()
-                    .items_center()
-                    .gap_1()
-                    .child(
-                        Progress::new("swap-progress")
-                            .value(swap_pct * 100.0)
-                            .color(swap_color)
-                            .with_size(px(4.))
-                            .flex_1(),
-                    )
-                    .child(
-                        div()
-                            .text_size(rems(0.7))
-                            .text_color(muted_fg)
-                            .child(swap_detail),
-                    ),
-            );
+            .when(self.system.total_swap > 0, |this| {
+                this.child(
+                    h_flex()
+                        .w_full()
+                        .items_center()
+                        .gap_1()
+                        .child(
+                            Progress::new("swap-progress")
+                                .value(swap_pct * 100.0)
+                                .color(swap_color)
+                                .with_size(px(4.))
+                                .flex_1(),
+                        )
+                        .child(
+                            div()
+                                .text_size(rems(0.7))
+                                .text_color(muted_fg)
+                                .child(swap_detail),
+                        ),
+                )
+            });
 
         // --- NET card: rx/tx text + dual sparkline ---
         let net_card = if show_net_card {
@@ -941,40 +943,66 @@ impl Ashell {
                                     .child(format!("{:.0}%", disk_pct)),
                             ),
                     )
-                    .children(disks.iter().map(|disk| {
-                        let pct = if disk.total_bytes > 0 {
-                            (disk.total_bytes - disk.available_bytes) as f64
-                                / disk.total_bytes as f64
-                                * 100.0
-                        } else {
-                            0.0
-                        };
-                        let mount_short = disk.mount.clone();
-                        let mount_id = format!("disk-{}", mount_short);
-                        h_flex()
-                            .w_full()
-                            .items_center()
-                            .gap_1()
+                    .child(
+                        div()
+                            .relative()
+                            .flex_1()
+                            .min_h(px(0.))
+                            .child(
+                                v_flex()
+                                    .id("disk-scroll")
+                                    .track_scroll(&self.disk_scroll_handle)
+                                    .overflow_y_scroll()
+                                    .size_full()
+                                    .children(disks.iter().map(|disk| {
+                                        let pct = if disk.total_bytes > 0 {
+                                            (disk.total_bytes - disk.available_bytes) as f64
+                                                / disk.total_bytes as f64
+                                                * 100.0
+                                        } else {
+                                            0.0
+                                        };
+                                        let mount_short = disk.mount.clone();
+                                        let mount_id = format!("disk-{}", mount_short);
+                                        h_flex()
+                                            .w_full()
+                                            .items_center()
+                                            .gap_1()
+                                            .child(
+                                                div()
+                                                    .text_size(rems(0.667))
+                                                    .text_color(muted_fg)
+                                                    .child(mount_short),
+                                            )
+                                            .child(
+                                                Progress::new(mount_id)
+                                                    .value(pct as f32)
+                                                    .color(disk_color)
+                                                    .with_size(px(4.))
+                                                    .flex_1(),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_size(rems(0.667))
+                                                    .text_color(muted_fg)
+                                                    .child(format!("{:.0}%", pct)),
+                                            )
+                                    }))
+                            )
                             .child(
                                 div()
-                                    .text_size(rems(0.667))
-                                    .text_color(muted_fg)
-                                    .child(mount_short),
+                                    .absolute()
+                                    .top_0()
+                                    .right_0()
+                                    .bottom_0()
+                                    .w(px(8.))
+                                    .child(
+                                        Scrollbar::vertical(&self.disk_scroll_handle)
+                                            .scrollbar_show(ScrollbarShow::Scrolling)
+                                    )
                             )
-                            .child(
-                                Progress::new(mount_id)
-                                    .value(pct as f32)
-                                    .color(disk_color)
-                                    .with_size(px(4.))
-                                    .flex_1(),
-                            )
-                            .child(
-                                div()
-                                    .text_size(rems(0.667))
-                                    .text_color(muted_fg)
-                                    .child(format!("{:.0}%", pct)),
-                            )
-                    }))
+                            .into_any_element()
+                    )
                     .into_any_element(),
             )
         } else {
