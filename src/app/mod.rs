@@ -28,10 +28,9 @@ use rust_i18n::t;
 use tokio::runtime::Runtime;
 
 use crate::{
-    sftp::SftpHandle,
     session::config::{AuthMethod, ConfigStore},
     system::{SystemSampler, SystemSnapshot},
-    terminal::{self, BackendCommand, BackendEvent, TabKind, TerminalTab},
+    terminal::{self, BackendEvent, TabKind, TerminalTab},
     backend::ssh,
 };
 
@@ -558,7 +557,7 @@ impl Ashell {
                     if self
                         .connection_progress
                         .as_ref()
-                        .is_some_and(|progress| progress.tab_id == tab_id)
+                        .is_some_and(|progress| progress.tab_id == tab_id && !progress.failed)
                     {
                         self.connection_progress = None;
                     }
@@ -644,6 +643,7 @@ impl Ashell {
                         self.remote_sample_in_flight = false;
                         return changed;
                     }
+                    let mut needs_new_progress = false;
                     if let Some(progress) = self.connection_progress.as_mut() {
                         if progress.tab_id == tab_id {
                             progress.lines.push(reason.clone().into());
@@ -653,16 +653,32 @@ impl Ashell {
                             let _ = tab_title;
                             progress.title = t!("connection_failed").into();
                             progress.failed = true;
+                        } else if !progress.failed {
+                            // We were showing connecting progress, but another tab dropped!
+                            // Switch to failed state so the user can see it and retry.
+                            progress.tab_id = tab_id.clone();
+                            let msg = format!("{}: {}", tab_title.unwrap_or_default(), reason);
+                            progress.lines.push(msg.into());
+                            self.connection_scroll_handle.set_offset(point(px(0.), px(-99999.0)));
+                            progress.title = t!("connection_failed").into();
+                            progress.failed = true;
+                        } else {
+                            // Already showing a failure dialog, just append the new failure
+                            let msg = format!("{}: {}", tab_title.unwrap_or_default(), reason);
+                            progress.lines.push(msg.into());
+                            self.connection_scroll_handle.set_offset(point(px(0.), px(-99999.0)));
                         }
                     } else if let Some(_) = session_label {
-                        if !is_graceful_exit {
-                            self.connection_progress = Some(ConnectionProgress {
-                                tab_id: tab_id.clone(),
-                                title: t!("connection_failed").into(),
-                                lines: vec![reason.clone().into()],
-                                failed: true,
-                            });
-                        }
+                        needs_new_progress = true;
+                    }
+
+                    if needs_new_progress && !is_graceful_exit {
+                        self.connection_progress = Some(ConnectionProgress {
+                            tab_id: tab_id.clone(),
+                            title: t!("connection_failed").into(),
+                            lines: vec![reason.clone().into()],
+                            failed: true,
+                        });
                     }
                     self.status = reason.into();
                 }

@@ -115,7 +115,7 @@ async fn run_ssh(
         tab_id: tab_id.clone(),
     });
 
-    let mut exit_reason = "ssh connection lost (unknown)".to_string();
+    let exit_reason;
     let mut is_graceful_close = false;
 
     loop {
@@ -146,7 +146,7 @@ async fn run_ssh(
                             bytes: data.to_vec(),
                         });
                     }
-                    Some(ChannelMsg::ExitStatus { exit_status: _ }) => {
+                    Some(ChannelMsg::ExitStatus { exit_status: _ }) | Some(ChannelMsg::Eof) => {
                         is_graceful_close = true;
                     }
                     Some(ChannelMsg::Close) => {
@@ -158,7 +158,11 @@ async fn run_ssh(
                         break;
                     }
                     None => {
-                        exit_reason = "ssh connection lost (network drop)".to_string();
+                        if is_graceful_close {
+                            exit_reason = "ssh session closed".to_string();
+                        } else {
+                            exit_reason = "ssh connection lost (network drop)".to_string();
+                        }
                         break;
                     }
                     _ => {}
@@ -184,6 +188,8 @@ async fn connect_and_authenticate(
 ) -> Result<russh::client::Handle<ClientHandler>> {
     let config = Arc::new(client::Config {
         inactivity_timeout: Some(std::time::Duration::from_secs(600)),
+        keepalive_interval: Some(std::time::Duration::from_secs(10)),
+        keepalive_max: 3,
         ..Default::default()
     });
     let addr = format!("{}:{}", session.host, session.port);

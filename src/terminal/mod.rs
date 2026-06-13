@@ -435,7 +435,6 @@ impl EventListener for TerminalListener {
     }
 }
 
-use rust_i18n::t;
 fn new_term(
     cols: u16,
     rows: u16,
