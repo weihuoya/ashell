@@ -1209,7 +1209,7 @@ impl Ashell {
                                         this.show_settings_dialog(window, cx)
                                     })),
                             )
-                            .child(self.theme_dropdown(cx)),
+                            
                     )
                     .child(
                         div()

@@ -221,7 +221,12 @@ pub(crate) fn open_main_window(cx: &mut App) {
         
         let workspace_panels_clone = view.read(cx).workspace_panels.clone();
         let body_panels_clone = view.read(cx).body_panels.clone();
+        let view_clone = view.clone();
         window.on_window_should_close(cx, move |window: &mut gpui::Window, cx: &mut gpui::App| {
+            if view_clone.read(cx).is_layout_reset {
+                tracing::info!("[ui] layout was reset, skipping save layout state.");
+                return true;
+            }
             tracing::info!("[ui] main application window closed, saving layout state...");
             let mut config = ConfigStore::load().unwrap_or_else(|_| ConfigStore::in_memory());
             let current_bounds = window.window_bounds();

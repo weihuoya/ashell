@@ -1,11 +1,8 @@
 use anyhow::{Context as _, Result};
-use gpui::{Anchor, App, Context, IntoElement, SharedString, Window, px};
+use gpui::{App, Context, SharedString, Window, px};
 use gpui_component::{
-    ActiveTheme as _, IconName, Sizable as _, Theme, ThemeMode, ThemeRegistry,
-    button::{Button, ButtonVariants as _},
-    menu::{DropdownMenu as _, PopupMenuItem},
+    ActiveTheme as _, Theme, ThemeMode, ThemeRegistry,
 };
-use rust_i18n::t;
 
 use crate::Ashell;
 
@@ -147,92 +144,5 @@ impl Ashell {
         }
     }
 
-    pub(crate) fn theme_dropdown(&self, cx: &mut Context<Self>) -> impl IntoElement {
-        let view = cx.entity();
-        let themes = ThemeRegistry::global(cx)
-            .sorted_themes()
-            .into_iter()
-            .cloned()
-            .collect::<Vec<_>>();
-        let light_themes = themes
-            .iter()
-            .filter(|theme| !theme.mode.is_dark())
-            .map(|theme| theme.name.clone())
-            .collect::<Vec<_>>();
-        let dark_themes = themes
-            .iter()
-            .filter(|theme| theme.mode.is_dark())
-            .map(|theme| theme.name.clone())
-            .collect::<Vec<_>>();
-        let follow_system = self.follow_system_theme;
-        let is_dark_mode = cx.theme().mode.is_dark();
-        let light_theme_name = self.light_theme_name.clone();
-        let dark_theme_name = self.dark_theme_name.clone();
-        let icon = if follow_system {
-            IconName::Sun
-        } else if is_dark_mode {
-            IconName::Moon
-        } else {
-            IconName::Sun
-        };
 
-        Button::new("theme-dropdown")
-            .ghost()
-            .small()
-            .icon(icon)
-            .dropdown_menu_with_anchor(Anchor::BottomRight, move |mut menu, window, _| {
-                menu = menu
-                    .min_w(220.)
-                    .item(
-                        PopupMenuItem::new(t!("follow_system"))
-                            .checked(follow_system)
-                            .on_click(window.listener_for(&view, |this, _, window, cx| {
-                                this.set_follow_system_theme(true, window, cx)
-                            })),
-                    )
-                    .item(
-                        PopupMenuItem::new(t!("use_light_mode"))
-                            .checked(!follow_system && !is_dark_mode)
-                            .on_click(window.listener_for(&view, |this, _, window, cx| {
-                                this.switch_theme_mode(ThemeMode::Light, window, cx)
-                            })),
-                    )
-                    .item(
-                        PopupMenuItem::new(t!("use_dark_mode"))
-                            .checked(!follow_system && is_dark_mode)
-                            .on_click(window.listener_for(&view, |this, _, window, cx| {
-                                this.switch_theme_mode(ThemeMode::Dark, window, cx)
-                            })),
-                    )
-                    .separator()
-                    .label(t!("light_theme").to_string());
-
-                for theme_name in light_themes.clone() {
-                    let checked = theme_name == light_theme_name;
-                    menu = menu.item(
-                        PopupMenuItem::new(theme_name.clone())
-                            .checked(checked)
-                            .on_click(window.listener_for(&view, move |this, _, window, cx| {
-                                this.apply_theme(theme_name.clone(), window, cx)
-                            })),
-                    );
-                }
-
-                menu = menu.separator();
-                menu = menu.label(t!("dark_theme").to_string());
-
-                for theme_name in dark_themes.clone() {
-                    let checked = theme_name == dark_theme_name;
-                    menu = menu.item(
-                        PopupMenuItem::new(theme_name.clone())
-                            .checked(checked)
-                            .on_click(window.listener_for(&view, move |this, _, window, cx| {
-                                this.apply_theme(theme_name.clone(), window, cx)
-                            })),
-                    );
-                }
-
-                menu
-            })
-    }
 }

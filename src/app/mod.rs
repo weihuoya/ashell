@@ -217,6 +217,7 @@ pub(crate) struct Ashell {
     pub(crate) selector_selection: usize,
     pub(crate) workspace_panels: Entity<ResizableState>,
     pub(crate) body_panels: Entity<ResizableState>,
+    pub(crate) is_layout_reset: bool,
     pub(crate) terminal_scrollbars: HashMap<String, TerminalScrollbarHandle>,
     pub(crate) remote_files_scroll_handle: UniformListScrollHandle,
     pub(crate) disk_scroll_handle: gpui::ScrollHandle,
@@ -398,6 +399,7 @@ impl Ashell {
             selector_selection: 0,
             workspace_panels,
             body_panels,
+            is_layout_reset: false,
             terminal_scrollbars: HashMap::new(),
             remote_files_scroll_handle: UniformListScrollHandle::new(),
             disk_scroll_handle: gpui::ScrollHandle::new(),
@@ -813,3 +815,4 @@ impl Ashell {
         ))
     }
 }
+
