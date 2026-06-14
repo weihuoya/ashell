@@ -1203,8 +1203,7 @@ impl Ashell {
                             .child(
                                 Button::new("sidebar-settings")
                                     .ghost()
-                                    .small()
-                                    .icon(IconName::Settings2)
+                                    .icon(IconName::Settings)
                                     .on_click(cx.listener(|this, _, window, cx| {
                                         this.show_settings_dialog(window, cx)
                                     })),
