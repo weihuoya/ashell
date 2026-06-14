@@ -394,19 +394,85 @@ impl Ashell {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        let delta_lines = match event.delta {
-            ScrollDelta::Lines(point) => point.y.round() as i32,
-            ScrollDelta::Pixels(point) => {
-                (point.y.as_f32() / self.terminal_line_height()).round() as i32
-            }
-        };
-        if delta_lines == 0 {
-            return;
-        }
         let Some(active_id) = self.active_tab.clone() else {
             return;
         };
+
+        // Get coordinates before mutably borrowing tabs
+        let grid_point = self.terminal_grid_point_and_side(event.position);
+
+        let line_height = self.terminal_line_height();
+
         if let Some(tab) = self.tabs.iter_mut().find(|tab| tab.id == active_id) {
+            let delta_lines = match event.delta {
+                ScrollDelta::Lines(point) => point.y.round() as i32,
+                ScrollDelta::Pixels(point) => {
+                    tab.scroll_pixel_y += point.y.as_f32();
+                    let lines = (tab.scroll_pixel_y / line_height).trunc() as i32;
+                    tab.scroll_pixel_y -= (lines as f32) * line_height;
+                    lines
+                }
+            };
+
+            if delta_lines == 0 {
+                return;
+            }
+
+            let mode = tab.term.mode();
+            
+            let is_mouse_tracking = mode.intersects(
+                alacritty_terminal::term::TermMode::MOUSE_REPORT_CLICK
+                    | alacritty_terminal::term::TermMode::MOUSE_MOTION
+                    | alacritty_terminal::term::TermMode::MOUSE_DRAG,
+            );
+
+            let is_alternate_scroll = mode.contains(
+                alacritty_terminal::term::TermMode::ALT_SCREEN
+                    | alacritty_terminal::term::TermMode::ALTERNATE_SCROLL,
+            );
+
+            if is_mouse_tracking {
+                if let Some((row, col, _)) = grid_point {
+                    let sgr = mode.contains(alacritty_terminal::term::TermMode::SGR_MOUSE);
+                    let button = if delta_lines > 0 { 64 } else { 65 };
+                    let times = delta_lines.abs();
+                    let mut bytes = Vec::new();
+                    for _ in 0..times {
+                        if sgr {
+                            bytes.extend_from_slice(
+                                format!("\x1b[<{};{};{}M", button, col + 1, row + 1).as_bytes(),
+                            );
+                        } else {
+                            if col < 223 && row < 223 {
+                                bytes.extend_from_slice(b"\x1b[M");
+                                bytes.push(button as u8 + 32);
+                                bytes.push(col as u8 + 33);
+                                bytes.push(row as u8 + 33);
+                            }
+                        }
+                    }
+                    if !bytes.is_empty() {
+                        tab.backend.send(crate::terminal::BackendCommand::Input(bytes));
+                    }
+                }
+                window.prevent_default();
+                cx.stop_propagation();
+                return;
+            } else if is_alternate_scroll {
+                let times = delta_lines.abs();
+                let code = if delta_lines > 0 { b'A' } else { b'B' };
+                let mut bytes = Vec::with_capacity((times * 3) as usize);
+                for _ in 0..times {
+                    bytes.extend_from_slice(&[b'\x1b', b'O', code]);
+                }
+                if !bytes.is_empty() {
+                    tab.backend.send(crate::terminal::BackendCommand::Input(bytes));
+                }
+                window.prevent_default();
+                cx.stop_propagation();
+                return;
+            }
+
             tab.scroll_history(delta_lines);
             window.prevent_default();
             cx.stop_propagation();

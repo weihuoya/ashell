@@ -122,6 +122,7 @@ pub struct TerminalTab {
     cols: u16,
     rows: u16,
     pub backend: BackendTx,
+    pub scroll_pixel_y: f32,
 }
 
 #[derive(Clone, Copy)]
@@ -228,6 +229,7 @@ impl TerminalTab {
             cols: 100,
             rows: 30,
             backend,
+            scroll_pixel_y: 0.0,
         }
     }
 
