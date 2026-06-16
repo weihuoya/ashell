@@ -16,6 +16,7 @@ gpui::actions!(
     [
         OpenSettings,
         OpenSession,
+        OpenTransfers,
         NewSsh,
         ToggleSidebar,
         ToggleSftpZoom,
@@ -50,6 +51,11 @@ pub(crate) const WORKSPACE_ACTIONS: &[WorkspaceAction] = &[
         id: "OpenSession",
         label_key: "settings_open_session",
         default_suffix: "o",
+    },
+    WorkspaceAction {
+        id: "OpenTransfers",
+        label_key: "settings_open_transfers",
+        default_suffix: "t",
     },
     WorkspaceAction {
         id: "NewSsh",
@@ -198,6 +204,7 @@ pub(crate) fn unbind_all_workspace_keys(cx: &mut App, config: &ConfigStore) {
 
     unbind_action!("OpenSettings", crate::OpenSettings);
     unbind_action!("OpenSession", crate::OpenSession);
+    unbind_action!("OpenTransfers", crate::OpenTransfers);
     unbind_action!("NewSsh", crate::NewSsh);
     unbind_action!("ToggleSidebar", crate::ToggleSidebar);
     unbind_action!("ToggleSftpZoom", crate::ToggleSftpZoom);
@@ -252,6 +259,7 @@ fn bind_workspace_actions(cx: &mut App, config: &ConfigStore) {
 
     bind_action!("OpenSettings", crate::OpenSettings);
     bind_action!("OpenSession", crate::OpenSession);
+    bind_action!("OpenTransfers", crate::OpenTransfers);
     bind_action!("NewSsh", crate::NewSsh);
     bind_action!("ToggleSidebar", crate::ToggleSidebar);
     bind_action!("ToggleSftpZoom", crate::ToggleSftpZoom);
@@ -273,7 +281,7 @@ impl KeybindingsPage {
         let groups = [
             (
                 "settings_group_keybind_general",
-                vec!["OpenSettings", "OpenSession", "NewSsh"],
+                vec!["OpenSettings", "OpenSession", "OpenTransfers", "NewSsh"],
             ),
             (
                 "settings_group_keybind_zoom",

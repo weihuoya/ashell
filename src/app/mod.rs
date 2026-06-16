@@ -189,6 +189,14 @@ impl ScrollbarHandle for TerminalScrollbarHandle {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum DialogKind {
+    Settings,
+    SessionSelector,
+    Transfers,
+    NewSsh,
+}
+
 pub(crate) struct Ashell {
     pub(crate) focus_handle: FocusHandle,
     pub(crate) selector_focus_handle: FocusHandle,
@@ -252,6 +260,7 @@ pub(crate) struct Ashell {
     pub(crate) config: ConfigStore,
     pub(crate) system_sampler: SystemSampler,
     pub(crate) recording_action: Option<String>,
+    pub(crate) active_dialog: Option<DialogKind>,
     /// Error message when a recorded keybinding conflicts with another
     pub(crate) keybind_error: Option<(String, String)>, // (action_id, error_message)
     /// Whether workspace keybindings are currently suspended (during settings)
@@ -468,7 +477,7 @@ impl Ashell {
             terminal_marked_text: None,
             dragging_splitter: None,
             drag_split_origin: None,
-            sftp_panel_minimized: config.sftp_panel_minimized(),
+            sftp_panel_minimized: false,
             sidebar_collapsed: config.sidebar_collapsed(),
             collapsed_saved_scroll_handle: gpui::ScrollHandle::new(),
             prev_monitoring_size: None,
@@ -476,6 +485,7 @@ impl Ashell {
             config,
             system_sampler,
             recording_action: None,
+            active_dialog: None,
             keybind_error: None,
             keybinds_suspended: false,
             system,

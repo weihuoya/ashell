@@ -160,10 +160,10 @@ impl Ashell {
                 };
                 let label = match kind {
                     crate::terminal::TransferType::Download => {
-                        format!("{} files downloading", active.len())
+                        t!("files_downloading", count = active.len()).to_string()
                     }
                     crate::terminal::TransferType::Upload => {
-                        format!("{} files uploading", active.len())
+                        t!("files_uploading", count = active.len()).to_string()
                     }
                 };
                 match pct {
@@ -286,7 +286,6 @@ impl Ashell {
                         })),
                 )
             });
-
         let Some(sftp) = active_sftp else {
             let mut outer = v_flex()
                 .gap_0()
@@ -379,13 +378,17 @@ impl Ashell {
                                     );
                                 }
                                 this.child(content)
+                                    .on_click(cx.listener(|this, _, window, cx| {
+                                        this.show_transfers_dialog(window, cx);
+                                    }))
                             })
                             .when(!has_transfers, |this| {
                                 this.icon(IconName::ArrowDown)
-                            })
-                            .on_click(cx.listener(|this, _, window, cx| {
-                                this.show_transfers_dialog(window, cx);
-                            })),
+                                    .label(t!("transfers").to_string())
+                                    .on_click(cx.listener(|this, _, window, cx| {
+                                        this.show_transfers_dialog(window, cx);
+                                    }))
+                            }),
                     )
                     .child(
                         Button::new("sftp-minimize-toggle")
@@ -395,6 +398,11 @@ impl Ashell {
                                 IconName::ChevronUp
                             } else {
                                 IconName::ChevronDown
+                            })
+                            .label(if self.sftp_panel_minimized {
+                                t!("panel_expand").to_string()
+                            } else {
+                                t!("panel_minimize").to_string()
                             })
                             .on_click(cx.listener(|this, _, window, cx| {
                                 this.toggle_sftp_minimized(window, cx);
@@ -788,11 +796,14 @@ impl Ashell {
                         })
                         .when(!has_transfers, |this| {
                             this.icon(IconName::ArrowDown)
+                                .label(t!("transfers").to_string())
                         })
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.show_transfers_dialog(window, cx);
                         })),
+
                 )
+
                 .child(
                     Button::new("sftp-minimize-toggle")
                         .ghost()
@@ -802,10 +813,17 @@ impl Ashell {
                         } else {
                             IconName::ChevronDown
                         })
+                        .label(if self.sftp_panel_minimized {
+                            t!("panel_expand").to_string()
+                        } else {
+                            t!("panel_minimize").to_string()
+                        })
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.toggle_sftp_minimized(window, cx);
                         })),
+
                 ),
+
         );
 
         outer.into_any_element()
@@ -2447,6 +2465,7 @@ impl Render for Ashell {
             .font_family(self.ui_font_family.clone())
             .on_action(cx.listener(|this, _: &crate::OpenSettings, window, cx| this.show_settings_dialog(window, cx)))
             .on_action(cx.listener(|this, _: &crate::OpenSession, window, cx| this.show_selector_dialog(window, cx)))
+            .on_action(cx.listener(|this, _: &crate::OpenTransfers, window, cx| this.show_transfers_dialog(window, cx)))
             .on_action(cx.listener(|this, _: &crate::NewSsh, window, cx| this.show_ssh_dialog(window, cx)))
             .on_action(cx.listener(|this, _: &crate::ToggleSidebar, _, cx| {
                 this.sidebar_collapsed = !this.sidebar_collapsed;

@@ -21,6 +21,11 @@ use crate::{Ashell, session::config::AuthMethod, system::format_bytes};
 
 impl Ashell {
     pub(crate) fn show_ssh_dialog(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.active_dialog.is_some() {
+            return;
+        }
+        self.active_dialog = Some(crate::app::DialogKind::NewSsh);
+
         let view = cx.entity();
         let session_name_input = self.session_name_input.clone();
         let host_input = self.host_input.clone();
@@ -37,6 +42,15 @@ impl Ashell {
                 .title(t!("new_ssh_connection"))
                 .w(px(520.))
                 .overlay_closable(true)
+                .on_close({
+                    let view = view.clone();
+                    move |_, _, cx| {
+                        view.update(cx, |this, cx| {
+                            this.active_dialog = None;
+                            cx.notify();
+                        });
+                    }
+                })
                 .content({
                     let view = view.clone();
                     let session_name_input = session_name_input.clone();
@@ -173,6 +187,11 @@ impl Ashell {
         });
     }
     pub(crate) fn show_selector_dialog(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.active_dialog.is_some() {
+            return;
+        }
+        self.active_dialog = Some(crate::app::DialogKind::SessionSelector);
+
         let view = cx.entity();
         let selector_focus_handle = self.selector_focus_handle.clone();
         let deferred_selector_focus_handle = selector_focus_handle.clone();
@@ -183,6 +202,15 @@ impl Ashell {
             dialog
                 .title(t!("open_session").to_string())
                 .w(px(520.))
+                .on_close({
+                    let view = view.clone();
+                    move |_, _, cx| {
+                        view.update(cx, |this, cx| {
+                            this.active_dialog = None;
+                            cx.notify();
+                        });
+                    }
+                })
                 .on_ok({
                     let view = view.clone();
                     move |_, window, cx| {
@@ -405,9 +433,26 @@ impl Ashell {
         });
     }
     pub(crate) fn show_transfers_dialog(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.active_dialog.is_some() {
+            return;
+        }
+        self.active_dialog = Some(crate::app::DialogKind::Transfers);
+
         let view = cx.entity();
         window.open_dialog(cx, move |dialog: Dialog, _window, _| {
-            dialog.w(px(600.)).close_button(false).content({
+            dialog
+                .w(px(600.))
+                .close_button(false)
+                .on_close({
+                    let view = view.clone();
+                    move |_, _, cx| {
+                        view.update(cx, |this, cx| {
+                            this.active_dialog = None;
+                            cx.notify();
+                        });
+                    }
+                })
+                .content({
                 let view = view.clone();
                 move |content, window, cx| {
                     let can_clear = view.read(cx).transfers.iter().any(|t| {
@@ -997,6 +1042,11 @@ impl Ashell {
         });
     }
     pub(crate) fn show_settings_dialog(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.active_dialog.is_some() {
+            return;
+        }
+        self.active_dialog = Some(crate::app::DialogKind::Settings);
+
         let view = cx.entity();
 
         // Unbind all workspace keys so they don't interfere with keybinding recording
@@ -1013,6 +1063,7 @@ impl Ashell {
                     move |_, _window, cx| {
                         // Re-register all workspace keys when closing settings
                         view.update(cx, |this, cx| {
+                            this.active_dialog = None;
                             this.keybinds_suspended = false;
                             this.recording_action = None;
                             this.keybind_error = None;

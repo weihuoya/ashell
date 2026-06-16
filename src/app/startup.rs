@@ -239,6 +239,20 @@ pub(crate) fn open_main_window(cx: &mut App) {
         let view = cx.new(|cx| Ashell::new(window, cx));
 
         tracing::info!("[ui] main application window opened");
+        let focus_handle = view.read(cx).focus_handle.clone();
+        window.focus(&focus_handle, cx);
+
+        let sftp_minimized = view.read(cx).config.sftp_panel_minimized();
+        if sftp_minimized {
+            window.defer(cx, {
+                let view = view.clone();
+                move |window, cx| {
+                    view.update(cx, |this, cx| {
+                        this.toggle_sftp_minimized(window, cx);
+                    });
+                }
+            });
+        }
 
         let workspace_panels_clone = view.read(cx).workspace_panels.clone();
         let body_panels_clone = view.read(cx).body_panels.clone();
@@ -283,12 +297,21 @@ pub(crate) fn open_main_window(cx: &mut App) {
                 .iter()
                 .map(|s| s.into())
                 .collect();
-            let body_sizes: Vec<f32> = body_panels_clone
+            let mut body_sizes: Vec<f32> = body_panels_clone
                 .read(cx)
                 .sizes()
                 .iter()
                 .map(|s| s.into())
                 .collect();
+
+            if view_clone.read(cx).sftp_panel_minimized {
+                if let Some(prev) = view_clone.read(cx).prev_monitoring_size {
+                    if body_sizes.len() > 1 {
+                        body_sizes[1] = prev.into();
+                    }
+                }
+            }
+
             config.set_layout_state(Some(saved_bounds), Some(workspace_sizes), Some(body_sizes));
             config.set_sidebar_collapsed(view_clone.read(cx).sidebar_collapsed);
             config.set_sftp_panel_minimized(view_clone.read(cx).sftp_panel_minimized);
