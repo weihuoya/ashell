@@ -31,10 +31,11 @@ fn main() {
     #[cfg(target_os = "macos")]
     let app = gpui_platform::application()
         .with_assets(Assets)
-        .with_quit_mode(gpui::QuitMode::Explicit);
+        .with_quit_mode(gpui::QuitMode::LastWindowClosed);
 
     #[cfg(not(target_os = "macos"))]
     let app = gpui_platform::application().with_assets(Assets);
+
     app.on_reopen(|cx| {
         if cx.windows().is_empty() {
             app::startup::open_main_window(cx);
