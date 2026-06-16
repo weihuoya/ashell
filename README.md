@@ -24,8 +24,28 @@ v0.4 在 v0.3 打下的基础上，重点带来了更完整的工作区操作能
 
 ## Mac 安装指南
 
-下载并解压后，请先将 `ashell.app` 拖入或移动到 **应用程序 (Applications)** 目录。
-由于应用采用本地签名，初次启动时如果系统提示“App 已损坏，无法打开”，请打开终端（Terminal）并执行以下命令：
+### 方法 1: Homebrew 安装 (推荐)
+
+如果您使用 [Homebrew](https://brew.sh/)，可以通过以下命令快速安装：
+
+```bash
+brew install rust-kotlin/taps/ashell --cask
+```
+
+更新应用：
+
+```bash
+brew update
+brew upgrade ashell --cask
+```
+
+> **注意**: 由于应用采用本地签名，Homebrew 在安装或更新过程中会执行一个后置脚本来自动处理隔离属性（quarantine flag），这需要您输入管理员密码以授权。
+
+### 方法 2: 手动下载
+
+1. 从 [Releases 页面](https://github.com/rust-kotlin/ashell/releases/latest) 下载并解压。
+2. 将 `ashell.app` 拖入或移动到 **应用程序 (Applications)** 目录。
+3. 由于应用采用本地签名，初次启动时如果系统提示“App 已损坏，无法打开”，请打开终端（Terminal）并执行以下命令：
 
 ```bash
 sudo xattr -cr /Applications/ashell.app

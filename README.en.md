@@ -24,8 +24,28 @@ You can download the latest pre-compiled releases for macOS, Windows, and Linux 
 
 ## Mac Installation Guide
 
-After downloading, please unzip the file and move `ashell.app` to your **Applications** folder. 
-Since the app uses ad-hoc signing, macOS may warn that the app is "damaged" upon first launch. If this happens, open Terminal and run the following command:
+### Method 1: Homebrew (Recommended)
+
+If you use [Homebrew](https://brew.sh/), you can install it quickly with:
+
+```bash
+brew install rust-kotlin/taps/ashell --cask
+```
+
+To update the app:
+
+```bash
+brew update
+brew upgrade ashell --cask
+```
+
+> **Note**: Since the app uses ad-hoc signing, the Homebrew installation or update includes a postflight script to automatically handle the quarantine flag. This will require you to enter your administrator password for authorization.
+
+### Method 2: Manual Download
+
+1. Download and unzip from the [Releases page](https://github.com/rust-kotlin/ashell/releases/latest).
+2. Move `ashell.app` to your **Applications** folder. 
+3. Since the app uses ad-hoc signing, macOS may warn that the app is "damaged" upon first launch. If this happens, open Terminal and run:
 
 ```bash
 sudo xattr -cr /Applications/ashell.app

@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # needed to create / update the GitHub Release
+  contents: write # needed to create / update the GitHub Release
 
 jobs:
   build:
@@ -26,15 +26,15 @@ jobs:
             target: x86_64-pc-windows-msvc
             name: windows-x86_64
             bin: ashell.exe
-          - os: ubuntu-22.04            # build on the oldest supported runner for broader glibc compatibility
+          - os: ubuntu-22.04 # build on the oldest supported runner for broader glibc compatibility
             target: x86_64-unknown-linux-gnu
             name: linux-x86_64
             bin: ashell
-          - os: macos-14               # Apple Silicon
+          - os: macos-14 # Apple Silicon
             target: aarch64-apple-darwin
             name: macos-aarch64
             bin: ashell
-          - os: macos-14               # Intel (cross-compiled from Apple Silicon to avoid queue delays)
+          - os: macos-14 # Intel (cross-compiled from Apple Silicon to avoid queue delays)
             target: x86_64-apple-darwin
             name: macos-x86_64
             bin: ashell
@@ -80,7 +80,7 @@ jobs:
             # Note: We build the bundle manually here rather than running
             # scripts/package-macos-app.sh, because that script runs `cargo build`
             # without respecting the `--target` flag from the matrix.
-            
+
             APP="ashell.app"
             CONTENTS="$APP/Contents"
             mkdir -p "$CONTENTS/MacOS" "$CONTENTS/Resources"
@@ -193,14 +193,14 @@ jobs:
           VERSION=${GITHUB_REF#refs/tags/v}
           SHA_ARM=$(sha256sum dist/macos-aarch64/*.zip | cut -d' ' -f1)
           SHA_INTEL=$(sha256sum dist/macos-x86_64/*.zip | cut -d' ' -f1)
-          
+
           mkdir -p tap/Casks
           CASK_FILE="tap/Casks/ashell.rb"
-          
+
           cat > "$CASK_FILE" <<EOF
           cask "ashell" do
             version "${VERSION}"
-            
+
             on_arm do
               sha256 "${SHA_ARM}"
               url "https://github.com/rust-kotlin/ashell/releases/download/v#{version}/ashell-v#{version}-macos-aarch64.zip"
@@ -224,9 +224,12 @@ jobs:
             end
 
             caveats <<~EOS
-              ashell is not notarized. The installation includes a postflight script
+              ashell uses ad-hoc signing. The installation includes a postflight script
               that removes the 'com.apple.quarantine' attribute from the application
               to allow it to run. This will require your administrator password.
+
+              ashell 采用本地签名。安装程序包含一个后置脚本，用于移除应用程序的
+              'com.apple.quarantine' 属性以允许其运行。这需要您的管理员密码。
             EOS
           end
           EOF
