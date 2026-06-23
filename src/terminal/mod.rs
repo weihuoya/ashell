@@ -1,6 +1,7 @@
 pub mod custom_blocks;
 pub mod element;
 pub mod input;
+pub mod highlight;
 
 use std::sync::mpsc::Sender;
 
@@ -144,6 +145,7 @@ pub struct TerminalTab {
     rows: u16,
     pub backend: BackendTx,
     pub scroll_pixel_y: f32,
+    pub(crate) highlight_cache: std::cell::RefCell<Option<(Vec<RenderCell>, std::collections::HashMap<(i32, i32), gpui::Hsla>)>>,
 }
 
 #[derive(Clone, Copy)]
@@ -153,7 +155,7 @@ pub struct CursorState {
     pub shape: CursorShape,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub struct RenderCell {
     pub row: i32,
     pub col: i32,
@@ -169,6 +171,7 @@ pub struct RenderSnapshot {
     pub history_size: usize,
     pub rows: usize,
     pub cols: usize,
+    pub highlights: std::collections::HashMap<(i32, i32), gpui::Hsla>,
 }
 
 #[derive(Clone, Copy)]
@@ -251,6 +254,7 @@ impl TerminalTab {
             rows: 30,
             backend,
             scroll_pixel_y: 0.0,
+            highlight_cache: std::cell::RefCell::new(None),
         }
     }
 
@@ -328,6 +332,21 @@ impl TerminalTab {
             });
         }
 
+        // Get highlights from cache or recompute
+        let highlights = {
+            let mut cache = self.highlight_cache.borrow_mut();
+            let cache_valid = cache.as_ref().map_or(false, |(cached_cells, _)| {
+                cached_cells == &cells
+            });
+            if cache_valid {
+                cache.as_ref().unwrap().1.clone()
+            } else {
+                let computed = self::highlight::highlight_cells(&cells, rows as usize);
+                *cache = Some((cells.clone(), computed.clone()));
+                computed
+            }
+        };
+
         RenderSnapshot {
             cells,
             cursor: self.cursor_state(),
@@ -336,6 +355,7 @@ impl TerminalTab {
             history_size: self.term.grid().history_size(),
             rows: self.rows as usize,
             cols: self.cols as usize,
+            highlights,
         }
     }
 

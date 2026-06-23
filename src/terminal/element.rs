@@ -11,7 +11,7 @@ use gpui::{
 use gpui_component::ActiveTheme as _;
 
 use crate::Ashell;
-use crate::terminal::custom_blocks::{highlight_cells, is_custom_block_supported, paint_custom_block};
+use crate::terminal::custom_blocks::{is_custom_block_supported, paint_custom_block};
 use crate::terminal::{RenderSnapshot, ViewportSelection};
 
 #[derive(Clone, Copy)]
@@ -357,9 +357,11 @@ impl TerminalElement {
         let mut custom_blocks = Vec::new();
         let mut current_run: Option<BatchedTextRun> = None;
 
-        // Compute keyword / pattern highlight map once per frame.
-        let highlights =
-            highlight_cells(&self.snapshot.cells, self.snapshot.rows, self.search_highlights.as_ref());
+        // Retrieve cached keyword highlights and merge with search highlights
+        let mut highlights = self.snapshot.highlights.clone();
+        if let Some(sm) = self.search_highlights.as_ref() {
+            highlights.extend(sm.iter().map(|(k, v)| (*k, *v)));
+        }
 
         for render_cell in &self.snapshot.cells {
             let cell = &render_cell.cell;
