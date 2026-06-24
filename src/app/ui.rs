@@ -1,12 +1,13 @@
 use gpui::{
     Context, ElementId, Focusable as _, FontWeight, Hsla, InteractiveElement as _, IntoElement,
     MouseButton, MouseDownEvent, ParentElement as _, PathBuilder, Pixels, Render,
-    StatefulInteractiveElement as _, Styled as _, Window, canvas, div, hsla,
-    point, prelude::FluentBuilder as _, px, rems, uniform_list,
+    StatefulInteractiveElement as _, Styled as _, Window, canvas, div, hsla, point,
+    prelude::FluentBuilder as _, px, rems, uniform_list,
 };
 use gpui_component::{
     ActiveTheme, Disableable as _, ElementExt, Icon, IconName, InteractiveElementExt as _, Root,
-    Size, Sizable as _, button::{Button, ButtonVariants as _},
+    Sizable as _, Size,
+    button::{Button, ButtonVariants as _},
     checkbox::Checkbox,
     h_flex,
     input::Input,
@@ -330,25 +331,35 @@ impl Ashell {
                                 let mut content = h_flex().items_center().gap_2();
                                 if let Some((ref label, ref pct_display, pct)) = dl_summary {
                                     content = content.child(
-                                        h_flex().items_center().gap_1()
-                                            .child(Icon::new(IconName::ArrowDown)
-                                                .with_size(Size::Small)
-                                                .text_color(cx.theme().primary))
-                                            .child(div()
-                                                .text_size(rems(0.833))
-                                                .text_color(cx.theme().primary)
-                                                .italic()
-                                                .child(label.clone()))
-                                            .child(Progress::new("sftp-status-dl")
-                                                .with_size(px(4.))
-                                                .value(pct)
-                                                .color(cx.theme().primary)
-                                                .w(px(50.0)))
-                                            .child(div()
-                                                .text_size(rems(0.833))
-                                                .text_color(cx.theme().primary)
-                                                .italic()
-                                                .child(pct_display.clone())),
+                                        h_flex()
+                                            .items_center()
+                                            .gap_1()
+                                            .child(
+                                                Icon::new(IconName::ArrowDown)
+                                                    .with_size(Size::Small)
+                                                    .text_color(cx.theme().primary),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_size(rems(0.833))
+                                                    .text_color(cx.theme().primary)
+                                                    .italic()
+                                                    .child(label.clone()),
+                                            )
+                                            .child(
+                                                Progress::new("sftp-status-dl")
+                                                    .with_size(px(4.))
+                                                    .value(pct)
+                                                    .color(cx.theme().primary)
+                                                    .w(px(50.0)),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_size(rems(0.833))
+                                                    .text_color(cx.theme().primary)
+                                                    .italic()
+                                                    .child(pct_display.clone()),
+                                            ),
                                     );
                                 }
                                 if let Some((ref label, ref pct_display, pct)) = ul_summary {
@@ -356,25 +367,35 @@ impl Ashell {
                                         content = content.child(div().w(px(6.)));
                                     }
                                     content = content.child(
-                                        h_flex().items_center().gap_1()
-                                            .child(Icon::new(IconName::ArrowUp)
-                                                .with_size(Size::Small)
-                                                .text_color(cx.theme().primary))
-                                            .child(div()
-                                                .text_size(rems(0.833))
-                                                .text_color(cx.theme().primary)
-                                                .italic()
-                                                .child(label.clone()))
-                                            .child(Progress::new("sftp-status-ul")
-                                                .with_size(px(4.))
-                                                .value(pct)
-                                                .color(cx.theme().primary)
-                                                .w(px(50.0)))
-                                            .child(div()
-                                                .text_size(rems(0.833))
-                                                .text_color(cx.theme().primary)
-                                                .italic()
-                                                .child(pct_display.clone())),
+                                        h_flex()
+                                            .items_center()
+                                            .gap_1()
+                                            .child(
+                                                Icon::new(IconName::ArrowUp)
+                                                    .with_size(Size::Small)
+                                                    .text_color(cx.theme().primary),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_size(rems(0.833))
+                                                    .text_color(cx.theme().primary)
+                                                    .italic()
+                                                    .child(label.clone()),
+                                            )
+                                            .child(
+                                                Progress::new("sftp-status-ul")
+                                                    .with_size(px(4.))
+                                                    .value(pct)
+                                                    .color(cx.theme().primary)
+                                                    .w(px(50.0)),
+                                            )
+                                            .child(
+                                                div()
+                                                    .text_size(rems(0.833))
+                                                    .text_color(cx.theme().primary)
+                                                    .italic()
+                                                    .child(pct_display.clone()),
+                                            ),
                                     );
                                 }
                                 this.child(content)
@@ -716,8 +737,8 @@ impl Ashell {
                                         .scrollbar_show(ScrollbarShow::Always),
                                 ),
                         ),
-                )
-                );
+                ),
+        );
         outer = outer.child(
             h_flex()
                 .flex_none()
@@ -745,25 +766,35 @@ impl Ashell {
                             let mut content = h_flex().items_center().gap_2();
                             if let Some((ref label, ref pct_display, pct)) = dl_summary {
                                 content = content.child(
-                                    h_flex().items_center().gap_1()
-                                        .child(Icon::new(IconName::ArrowDown)
-                                            .with_size(Size::Small)
-                                            .text_color(cx.theme().primary))
-                                        .child(div()
-                                            .text_size(rems(0.833))
-                                            .text_color(cx.theme().primary)
-                                            .italic()
-                                            .child(label.clone()))
-                                        .child(Progress::new("sftp-status-dl")
-                                            .with_size(px(4.))
-                                            .value(pct)
-                                            .color(cx.theme().primary)
-                                            .w(px(50.0)))
-                                        .child(div()
-                                            .text_size(rems(0.833))
-                                            .text_color(cx.theme().primary)
-                                            .italic()
-                                            .child(pct_display.clone())),
+                                    h_flex()
+                                        .items_center()
+                                        .gap_1()
+                                        .child(
+                                            Icon::new(IconName::ArrowDown)
+                                                .with_size(Size::Small)
+                                                .text_color(cx.theme().primary),
+                                        )
+                                        .child(
+                                            div()
+                                                .text_size(rems(0.833))
+                                                .text_color(cx.theme().primary)
+                                                .italic()
+                                                .child(label.clone()),
+                                        )
+                                        .child(
+                                            Progress::new("sftp-status-dl")
+                                                .with_size(px(4.))
+                                                .value(pct)
+                                                .color(cx.theme().primary)
+                                                .w(px(50.0)),
+                                        )
+                                        .child(
+                                            div()
+                                                .text_size(rems(0.833))
+                                                .text_color(cx.theme().primary)
+                                                .italic()
+                                                .child(pct_display.clone()),
+                                        ),
                                 );
                             }
                             if let Some((ref label, ref pct_display, pct)) = ul_summary {
@@ -771,25 +802,35 @@ impl Ashell {
                                     content = content.child(div().w(px(6.)));
                                 }
                                 content = content.child(
-                                    h_flex().items_center().gap_1()
-                                        .child(Icon::new(IconName::ArrowUp)
-                                            .with_size(Size::Small)
-                                            .text_color(cx.theme().primary))
-                                        .child(div()
-                                            .text_size(rems(0.833))
-                                            .text_color(cx.theme().primary)
-                                            .italic()
-                                            .child(label.clone()))
-                                        .child(Progress::new("sftp-status-ul")
-                                            .with_size(px(4.))
-                                            .value(pct)
-                                            .color(cx.theme().primary)
-                                            .w(px(50.0)))
-                                        .child(div()
-                                            .text_size(rems(0.833))
-                                            .text_color(cx.theme().primary)
-                                            .italic()
-                                            .child(pct_display.clone())),
+                                    h_flex()
+                                        .items_center()
+                                        .gap_1()
+                                        .child(
+                                            Icon::new(IconName::ArrowUp)
+                                                .with_size(Size::Small)
+                                                .text_color(cx.theme().primary),
+                                        )
+                                        .child(
+                                            div()
+                                                .text_size(rems(0.833))
+                                                .text_color(cx.theme().primary)
+                                                .italic()
+                                                .child(label.clone()),
+                                        )
+                                        .child(
+                                            Progress::new("sftp-status-ul")
+                                                .with_size(px(4.))
+                                                .value(pct)
+                                                .color(cx.theme().primary)
+                                                .w(px(50.0)),
+                                        )
+                                        .child(
+                                            div()
+                                                .text_size(rems(0.833))
+                                                .text_color(cx.theme().primary)
+                                                .italic()
+                                                .child(pct_display.clone()),
+                                        ),
                                 );
                             }
                             this.child(content)
@@ -801,9 +842,7 @@ impl Ashell {
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.show_transfers_dialog(window, cx);
                         })),
-
                 )
-
                 .child(
                     Button::new("sftp-minimize-toggle")
                         .ghost()
@@ -821,9 +860,7 @@ impl Ashell {
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.toggle_sftp_minimized(window, cx);
                         })),
-
                 ),
-
         );
 
         outer.into_any_element()
@@ -1798,81 +1835,78 @@ impl Ashell {
                             .overflow_y_scroll()
                             .gap_2()
                             .items_center()
-                            .children(sessions.into_iter().enumerate().map(
-                                |(ix, session)| {
-                                    let connect_id = session.id.clone();
-                                    let is_active = active_session_id.as_deref()
-                                        == Some(session.id.as_str());
-                                    let name = session.name.clone();
+                            .children(sessions.into_iter().enumerate().map(|(ix, session)| {
+                                let connect_id = session.id.clone();
+                                let is_active =
+                                    active_session_id.as_deref() == Some(session.id.as_str());
+                                let name = session.name.clone();
 
-                                    // Abbreviate: first 1 char for CJK, first 2 chars for Latin
-                                    let abbrev = {
-                                        let mut chars = name.chars();
-                                        if let Some(first) = chars.next() {
-                                            if first > '\u{2E7F}' {
-                                                // CJK character range — show 1 char
-                                                first.to_string()
-                                            } else {
-                                                // Latin / ASCII — show first 2 chars
-                                                let mut s = first.to_string();
-                                                if let Some(second) = chars.next() {
-                                                    s.push(second);
-                                                }
-                                                s
-                                            }
+                                // Abbreviate: first 1 char for CJK, first 2 chars for Latin
+                                let abbrev = {
+                                    let mut chars = name.chars();
+                                    if let Some(first) = chars.next() {
+                                        if first > '\u{2E7F}' {
+                                            // CJK character range — show 1 char
+                                            first.to_string()
                                         } else {
-                                            "?".to_string()
+                                            // Latin / ASCII — show first 2 chars
+                                            let mut s = first.to_string();
+                                            if let Some(second) = chars.next() {
+                                                s.push(second);
+                                            }
+                                            s
                                         }
-                                    };
+                                    } else {
+                                        "?".to_string()
+                                    }
+                                };
 
-                                    let edit_id = session.id.clone();
-                                    let delete_id = session.id.clone();
-                                    div()
-                                        .id(("collapsed-saved", ix))
-                                        .w(px(36.))
-                                        .h(px(36.))
-                                        .flex()
-                                        .items_center()
-                                        .justify_center()
-                                        .rounded_md()
-                                        .border_1()
-                                        .border_color(if is_active {
-                                            cx.theme().primary
-                                        } else {
-                                            cx.theme().border
-                                        })
-                                        .bg(if is_active {
-                                            cx.theme().tab_active
-                                        } else {
-                                            cx.theme().muted
-                                        })
-                                        .cursor_pointer()
-                                        .hover(|this| this.bg(cx.theme().secondary))
-                                        .on_mouse_down(
-                                            MouseButton::Left,
-                                            cx.listener(move |this, _, _, cx| {
-                                                this.connect_saved_session(
-                                                    connect_id.clone(),
-                                                    cx,
-                                                )
-                                            }),
-                                        )
-                                        .tooltip({
-                                            let tooltip_text = format!("{} {}", name, session.user);
-                                            move |window, cx| {
-                                                gpui_component::tooltip::Tooltip::new(tooltip_text.clone()).build(window, cx)
-                                            }
-                                        })
-                                        .context_menu({
-                                            let view = cx.entity();
-                                            move |menu, window, _| {
-                                                let edit_value = edit_id.clone();
-                                                let clone_value = edit_id.clone();
-                                                let delete_value = delete_id.clone();
-                                                menu.item(
-                                                    PopupMenuItem::new(
-                                                        t!("clone").to_string(),
-                                                    )
+                                let edit_id = session.id.clone();
+                                let delete_id = session.id.clone();
+                                div()
+                                    .id(("collapsed-saved", ix))
+                                    .w(px(36.))
+                                    .h(px(36.))
+                                    .flex()
+                                    .items_center()
+                                    .justify_center()
+                                    .rounded_md()
+                                    .border_1()
+                                    .border_color(if is_active {
+                                        cx.theme().primary
+                                    } else {
+                                        cx.theme().border
+                                    })
+                                    .bg(if is_active {
+                                        cx.theme().tab_active
+                                    } else {
+                                        cx.theme().muted
+                                    })
+                                    .cursor_pointer()
+                                    .hover(|this| this.bg(cx.theme().secondary))
+                                    .on_mouse_down(
+                                        MouseButton::Left,
+                                        cx.listener(move |this, _, _, cx| {
+                                            this.connect_saved_session(connect_id.clone(), cx)
+                                        }),
+                                    )
+                                    .tooltip({
+                                        let tooltip_text = format!("{} {}", name, session.user);
+                                        move |window, cx| {
+                                            gpui_component::tooltip::Tooltip::new(
+                                                tooltip_text.clone(),
+                                            )
+                                            .build(window, cx)
+                                        }
+                                    })
+                                    .context_menu({
+                                        let view = cx.entity();
+                                        move |menu, window, _| {
+                                            let edit_value = edit_id.clone();
+                                            let clone_value = edit_id.clone();
+                                            let delete_value = delete_id.clone();
+                                            menu.item(
+                                                PopupMenuItem::new(t!("clone").to_string())
                                                     .on_click(window.listener_for(
                                                         &view,
                                                         move |this, _, window, cx| {
@@ -1883,11 +1917,9 @@ impl Ashell {
                                                             )
                                                         },
                                                     )),
-                                                )
-                                                .item(
-                                                    PopupMenuItem::new(
-                                                        t!("edit").to_string(),
-                                                    )
+                                            )
+                                            .item(
+                                                PopupMenuItem::new(t!("edit").to_string())
                                                     .on_click(window.listener_for(
                                                         &view,
                                                         move |this, _, window, cx| {
@@ -1898,11 +1930,9 @@ impl Ashell {
                                                             )
                                                         },
                                                     )),
-                                                )
-                                                .item(
-                                                    PopupMenuItem::new(
-                                                        t!("delete").to_string(),
-                                                    )
+                                            )
+                                            .item(
+                                                PopupMenuItem::new(t!("delete").to_string())
                                                     .on_click(window.listener_for(
                                                         &view,
                                                         move |this, _, _, cx| {
@@ -1912,22 +1942,21 @@ impl Ashell {
                                                             )
                                                         },
                                                     )),
-                                                )
-                                            }
-                                        })
-                                        .child(
-                                            div()
-                                                .text_size(rems(0.833))
-                                                .font_weight(FontWeight::BOLD)
-                                                .text_color(if is_active {
-                                                    cx.theme().primary
-                                                } else {
-                                                    cx.theme().foreground
-                                                })
-                                                .child(abbrev),
-                                        )
-                                },
-                            )),
+                                            )
+                                        }
+                                    })
+                                    .child(
+                                        div()
+                                            .text_size(rems(0.833))
+                                            .font_weight(FontWeight::BOLD)
+                                            .text_color(if is_active {
+                                                cx.theme().primary
+                                            } else {
+                                                cx.theme().foreground
+                                            })
+                                            .child(abbrev),
+                                    )
+                            })),
                     )
                     .child(
                         div()
@@ -1942,15 +1971,17 @@ impl Ashell {
                                 )
                                 .id("collapsed-saved-scrollbar")
                                 .axis(gpui_component::scroll::ScrollbarAxis::Vertical)
-                                .scrollbar_show(
-                                    gpui_component::scroll::ScrollbarShow::Scrolling,
-                                ),
+                                .scrollbar_show(gpui_component::scroll::ScrollbarShow::Scrolling),
                             ),
                     ),
             )
     }
 
-    fn render_window_controls(&self, window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+    fn render_window_controls(
+        &self,
+        window: &mut Window,
+        _cx: &mut Context<Self>,
+    ) -> impl IntoElement {
         let is_macos = cfg!(target_os = "macos");
         let is_fullscreen = window.is_fullscreen();
 
@@ -1990,7 +2021,7 @@ impl Ashell {
                             if window.is_fullscreen() {
                                 window.toggle_fullscreen();
                             } else {
-                                window.zoom_window();
+                                window.titlebar_double_click();
                             }
                         })
                         .hover(|s| s.bg(hsla(0.33, 0.8, 0.5, 1.0)))
@@ -2095,17 +2126,22 @@ impl Ashell {
                                                 .xsmall()
                                                 .icon(IconName::Close)
                                                 .mr(px(5.))
-                                                .on_mouse_down(MouseButton::Left, |_, window, cx| {
-                                                    window.prevent_default();
-                                                    cx.stop_propagation();
-                                                })
-                                                .on_click(cx.listener(move |this, _, window, cx| {
-                                                    window.prevent_default();
-                                                    cx.stop_propagation();
-                                                    if !close_id.is_empty() {
-                                                        this.close_tab(close_id.clone(), cx)
-                                                    }
-                                                })),
+                                                .on_mouse_down(
+                                                    MouseButton::Left,
+                                                    |_, window, cx| {
+                                                        window.prevent_default();
+                                                        cx.stop_propagation();
+                                                    },
+                                                )
+                                                .on_click(cx.listener(
+                                                    move |this, _, window, cx| {
+                                                        window.prevent_default();
+                                                        cx.stop_propagation();
+                                                        if !close_id.is_empty() {
+                                                            this.close_tab(close_id.clone(), cx)
+                                                        }
+                                                    },
+                                                )),
                                         )
                                 },
                             ))
@@ -2161,7 +2197,11 @@ impl Ashell {
             )
     }
 
-    fn render_terminal_panel(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render_terminal_panel(
+        &mut self,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> impl IntoElement {
         let has_active = self.active_tab.is_some();
         let pane_tree = self.pane_root.clone();
         let view = cx.entity();
@@ -2391,14 +2431,14 @@ impl Ashell {
                 .size_full()
                 .children(children.iter().enumerate().flat_map(|(i, child)| {
                     let mut items: Vec<gpui::AnyElement> = Vec::new();
-                        if i > 0 {
-                            let splitter_path = path.to_vec(); // path to the CONTAINER that has the ratio
-                            items.push(
-                                div()
-                                    .w(px(4.))
-                                    .h_full()
-                                    .flex_none()
-                                    .cursor_col_resize()
+                    if i > 0 {
+                        let splitter_path = path.to_vec(); // path to the CONTAINER that has the ratio
+                        items.push(
+                            div()
+                                .w(px(4.))
+                                .h_full()
+                                .flex_none()
+                                .cursor_col_resize()
                                 .bg(cx.theme().border)
                                 .hover(|s| s.bg(cx.theme().accent))
                                 .on_mouse_down(
@@ -2506,13 +2546,11 @@ impl Render for Ashell {
             .child(
                 resizable_panel()
                     .size(sftp_size)
-                    .size_range(
-                        if self.sftp_panel_minimized {
-                            px(minimized_height)..px(minimized_height)
-                        } else {
-                            px(min_panel_height)..px(1200.)
-                        },
-                    )
+                    .size_range(if self.sftp_panel_minimized {
+                        px(minimized_height)..px(minimized_height)
+                    } else {
+                        px(min_panel_height)..px(1200.)
+                    })
                     .child(monitoring_contents),
             )
             .into_any_element();
@@ -2528,32 +2566,29 @@ impl Render for Ashell {
                         .child(self.render_collapsed_sidebar(cx)),
                 )
                 .child(
-                    div()
-                        .flex_1()
-                        .h_full()
-                        .min_w(px(0.))
-                        .child(
-                            v_flex()
-                                .size_full()
-                                .relative()
-                                .overflow_hidden()
-                                .when(
-                                    self.active_title_bar_style == crate::session::config::TitleBarStyle::Native,
-                                    |this| {
-                                        this.child(
-                                            div()
-                                                .flex_none()
-                                                .h(px(32.))
-                                                .w_full()
-                                                .bg(cx.theme().tab_bar)
-                                                .border_b_1()
-                                                .border_color(cx.theme().border)
-                                                .child(self.render_tab_bar(cx)),
-                                        )
-                                    },
-                                )
-                                .child(body_panel),
-                        ),
+                    div().flex_1().h_full().min_w(px(0.)).child(
+                        v_flex()
+                            .size_full()
+                            .relative()
+                            .overflow_hidden()
+                            .when(
+                                self.active_title_bar_style
+                                    == crate::session::config::TitleBarStyle::Native,
+                                |this| {
+                                    this.child(
+                                        div()
+                                            .flex_none()
+                                            .h(px(32.))
+                                            .w_full()
+                                            .bg(cx.theme().tab_bar)
+                                            .border_b_1()
+                                            .border_color(cx.theme().border)
+                                            .child(self.render_tab_bar(cx)),
+                                    )
+                                },
+                            )
+                            .child(body_panel),
+                    ),
                 )
                 .into_any_element()
         } else {
@@ -2573,7 +2608,8 @@ impl Render for Ashell {
                     .relative()
                     .overflow_hidden()
                     .when(
-                        self.active_title_bar_style == crate::session::config::TitleBarStyle::Native,
+                        self.active_title_bar_style
+                            == crate::session::config::TitleBarStyle::Native,
                         |this| {
                             this.child(
                                 div()
@@ -2640,10 +2676,7 @@ impl Render for Ashell {
                         .w_full()
                         .bg(cx.theme().tab_bar)
                         .on_double_click(|_, window, _| {
-                            #[cfg(target_os = "macos")]
                             window.titlebar_double_click();
-                            #[cfg(not(target_os = "macos"))]
-                            window.zoom_window();
                         })
                         .child(self.render_window_controls(window, cx))
                         .child(
