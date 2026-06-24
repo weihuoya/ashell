@@ -182,7 +182,7 @@ impl Ashell {
         cx.notify();
     }
 
-    fn active_terminal_selection_text(&self) -> Option<String> {
+    pub(crate) fn active_terminal_selection_text(&self) -> Option<String> {
         let active_id = self.active_tab.as_ref()?;
         self.tabs
             .iter()
