@@ -211,31 +211,12 @@ impl Ashell {
         Self::set_input_value(&self.proxy_password_input, session.proxy_password.clone(), window, cx);
     }
 
-    pub(crate) fn pick_ssh_key_path(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let start_dir = directories::BaseDirs::new()
-            .map(|d| d.home_dir().join(".ssh"))
-            .unwrap_or_else(|| std::path::PathBuf::from("/"));
-
-        let file_dialog = rfd::AsyncFileDialog::new()
-            .set_directory(start_dir)
-            .pick_file();
-
-        cx.spawn_in(window, async move |this, mut cx| {
-            if let Some(file) = file_dialog.await {
-                let _ = gpui::AsyncWindowContext::update(&mut cx, |window, cx| {
-                    let _ = this.update(cx, |this, cx| {
-                        Self::set_input_value(
-                            &this.key_path_input,
-                            file.path().to_string_lossy().to_string(),
-                            window,
-                            cx,
-                        );
-                    });
-                });
-            }
-            Ok::<(), anyhow::Error>(())
-        })
-        .detach();
+    pub(crate) fn pick_ssh_key_path(&mut self, _window: &mut Window, _cx: &mut Context<Self>) {
+        // Disabled on ROCKNIX: rfd file dialogs depend on GTK/XDG portal which is not
+        // available in the minimal handheld environment. Users can type the key path
+        // into the input field manually.
+        self.status = "key picker disabled; enter path manually".into();
+        _cx.notify();
     }
 
     pub(crate) fn open_new_ssh_dialog(&mut self, window: &mut Window, cx: &mut Context<Self>) {

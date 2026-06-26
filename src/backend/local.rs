@@ -29,7 +29,8 @@ pub fn spawn_local_terminal(
         if cfg!(windows) {
             "powershell.exe".into()
         } else {
-            "/bin/zsh".into()
+            // ROCKNIX and other minimal distros may not ship zsh; fall back to sh.
+            "/bin/sh".into()
         }
     });
 

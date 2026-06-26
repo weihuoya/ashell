@@ -645,6 +645,39 @@ EOF
   swap_total=$(awk '"'"'/^SwapTotal:/ {print $2 * 1024}'"'"' /proc/meminfo 2>/dev/null)
   swap_free=$(awk '"'"'/^SwapFree:/ {print $2 * 1024}'"'"' /proc/meminfo 2>/dev/null)
 
+  bat_dir=""
+  fuel_dir=""
+  charger_dir=""
+  for d in /sys/class/power_supply/*; do
+    [ -d "$d" ] || continue
+    name=$(basename "$d" | tr '"'"'[:upper:]'"'"' '"'"'[:lower:]'"'"')
+    case "$name" in
+      *bat*) bat_dir=$d ;;
+      *qcom-battery*|*qcom-battmgr-bat*) bat_dir=$d ;;
+      *fuel*) fuel_dir=$d ;;
+      *charger*) charger_dir=$d ;;
+    esac
+  done
+  battery_level=""
+  battery_charging="0"
+  if [ -n "$bat_dir" ] && [ -r "$bat_dir/capacity" ]; then
+    battery_level=$(cat "$bat_dir/capacity" 2>/dev/null)
+    status=$(cat "$bat_dir/status" 2>/dev/null | tr -d '\n')
+    [ "$status" != "Not charging" ] && [ "$status" != "Discharging" ] && battery_charging="1"
+    if [ -r "$bat_dir/current_avg" ]; then
+      current_avg=$(cat "$bat_dir/current_avg" 2>/dev/null)
+      [ "$current_avg" -gt 0 ] 2>/dev/null && battery_charging="1"
+    fi
+  elif [ -n "$fuel_dir" ] && [ -n "$charger_dir" ]; then
+    charge_now=$(cat "$fuel_dir/charge_now" 2>/dev/null)
+    charge_full=$(cat "$fuel_dir/charge_full" 2>/dev/null)
+    if [ -n "$charge_now" ] && [ -n "$charge_full" ] && [ "$charge_full" -gt 0 ]; then
+      battery_level=$(awk -v now="$charge_now" -v full="$charge_full" '"'"'BEGIN { printf "%.0f", (now/full)*100 }'"'"')
+    fi
+    status=$(cat "$charger_dir/status" 2>/dev/null | tr -d '\n')
+    [ "$status" != "Not charging" ] && [ "$status" != "Discharging" ] && battery_charging="1"
+  fi
+
   echo "CPU_PERCENT=${cpu_percent:-0.00}"
   echo "MEM_TOTAL=${mem_total:-0}"
   echo "MEM_USED=$(( ${mem_total:-0} - ${mem_available:-0} ))"
@@ -652,6 +685,8 @@ EOF
   echo "SWAP_USED=$(( ${swap_total:-0} - ${swap_free:-0} ))"
   echo "NET_RX=$(( ${net_rx_2:-0} - ${net_rx_1:-0} ))"
   echo "NET_TX=$(( ${net_tx_2:-0} - ${net_tx_1:-0} ))"
+  echo "BATTERY_LEVEL=${battery_level:-}"
+  echo "BATTERY_CHARGING=${battery_charging:-0}"
   df -kP 2>/dev/null | awk "NR > 1 && \$1 !~ /^(tmpfs|devtmpfs|ramfs|overlay|aufs)\$/ { printf \"DISK=%s\t%s\t%s\n\", \$6, \$4 * 1024, \$2 * 1024 }" | head -n 6
   exit 0
 fi
@@ -691,6 +726,8 @@ EOF
   echo "SWAP_USED=${swap_used:-0}"
   echo "NET_RX=$(( ${net_rx_2:-0} - ${net_rx_1:-0} ))"
   echo "NET_TX=$(( ${net_tx_2:-0} - ${net_tx_1:-0} ))"
+  echo "BATTERY_LEVEL="
+  echo "BATTERY_CHARGING=0"
   df -kP 2>/dev/null | awk "NR > 1 && \$1 !~ /^(devfs|tmpfs|devtmpfs|ramfs|overlay|aufs)\$/ { printf \"DISK=%s\t%s\t%s\n\", \$6, \$4 * 1024, \$2 * 1024 }" | head -n 6
   exit 0
 fi
@@ -702,6 +739,8 @@ echo "SWAP_TOTAL=0"
 echo "SWAP_USED=0"
 echo "NET_RX=0"
 echo "NET_TX=0"
+echo "BATTERY_LEVEL="
+echo "BATTERY_CHARGING=0"
 '"#;
 
 #[derive(Clone)]

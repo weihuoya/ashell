@@ -1,6 +1,7 @@
 use std::{
     collections::BTreeMap,
     ffi::OsStr,
+    path::{Path, PathBuf},
     time::{Duration, Instant},
 };
 
@@ -23,6 +24,14 @@ pub struct DiskSample {
 }
 
 #[derive(Debug, Clone, Default)]
+pub struct BatterySample {
+    /// Battery charge level as a ratio in the range [0.0, 1.0].
+    pub level: f32,
+    /// Whether the battery is currently charging.
+    pub charging: bool,
+}
+
+#[derive(Debug, Clone, Default)]
 pub struct SystemSnapshot {
     pub cpu_percent: f32,
     pub mem_percent: f32,
@@ -35,6 +44,7 @@ pub struct SystemSnapshot {
     pub net_tx_rate: u64,
     pub disks: Vec<DiskSample>,
     pub total_swap: u64,
+    pub battery: Option<BatterySample>,
 }
 
 pub struct SystemSampler {
@@ -94,6 +104,8 @@ impl SystemSampler {
         self.last_tx_total = tx_total;
         self.last_instant = now;
 
+        let battery = sample_battery();
+
         let mut disks: Vec<DiskSample> = self
             .disks
             .iter()
@@ -126,8 +138,96 @@ impl SystemSampler {
             net_tx_rate: tx_rate,
             disks,
             total_swap: swap_total,
+            battery,
         }
     }
+}
+
+fn read_first_line(path: &Path) -> Option<String> {
+    std::fs::read_to_string(path)
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+}
+
+fn read_int(path: &Path) -> Option<u64> {
+    read_first_line(path)?.parse::<u64>().ok()
+}
+
+/// Reads battery information from `/sys/class/power_supply`, matching the
+/// heuristics used by ROCKNIX EmulationStation.
+fn sample_battery() -> Option<BatterySample> {
+    let entries = std::fs::read_dir("/sys/class/power_supply").ok()?;
+
+    let mut battery_root: Option<PathBuf> = None;
+    let mut fuelgauge_root: Option<PathBuf> = None;
+    let mut charger_root: Option<PathBuf> = None;
+
+    for entry in entries.flatten() {
+        let name = entry.file_name().to_string_lossy().to_lowercase();
+        // Skip peripheral batteries (gamepads, controllers, etc.).
+        if name.contains("controller") || name.contains("hid-") {
+            continue;
+        }
+        if name == "battery" || name.starts_with("bat") {
+            battery_root = Some(entry.path());
+        } else if name.contains("qcom-battery") || name.contains("qcom-battmgr-bat") {
+            battery_root = Some(entry.path());
+        } else if name.contains("fuel") {
+            fuelgauge_root = Some(entry.path());
+        } else if name.contains("charger") {
+            charger_root = Some(entry.path());
+        }
+    }
+
+    if let Some(root) = battery_root {
+        let status = read_first_line(&root.join("status"));
+        let level = read_int(&root.join("capacity"))
+            .map(|c| (c as f32).clamp(0.0, 100.0) / 100.0);
+        let current = read_int(&root.join("current_avg"));
+
+        let mut charging = false;
+        if let Some(s) = &status {
+            charging = s != "Not charging" && s != "Discharging";
+        }
+        if current.map_or(false, |c| c > 0) {
+            charging = true;
+        }
+
+        if status.is_some() || level.is_some() {
+            return Some(BatterySample {
+                level: level.unwrap_or(0.0),
+                charging,
+            });
+        }
+    }
+
+    if let (Some(fuel), Some(charger)) = (fuelgauge_root, charger_root) {
+        let charge_now = read_int(&fuel.join("charge_now"));
+        let charge_full = read_int(&fuel.join("charge_full"));
+        let status = read_first_line(&charger.join("status"));
+
+        let level = match (charge_now, charge_full) {
+            (Some(now), Some(full)) if full > 0 => {
+                Some(((now as f32 / full as f32) * 100.0).clamp(0.0, 100.0) / 100.0)
+            }
+            _ => None,
+        };
+
+        let mut charging = false;
+        if let Some(s) = &status {
+            charging = s != "Not charging" && s != "Discharging";
+        }
+
+        if charge_now.is_some() || status.is_some() {
+            return Some(BatterySample {
+                level: level.unwrap_or(0.0),
+                charging,
+            });
+        }
+    }
+
+    None
 }
 
 fn ratio(used: u64, total: u64) -> f32 {
@@ -199,6 +299,18 @@ pub fn remote_snapshot_from_kv(raw: &str) -> Result<SystemSnapshot> {
     let rx_rate = parse_u64(&kv, "NET_RX");
     let tx_rate = parse_u64(&kv, "NET_TX");
 
+    let battery = kv.get("BATTERY_LEVEL").and_then(|value| {
+        let level = value.parse::<f32>().ok()? / 100.0;
+        let charging = kv
+            .get("BATTERY_CHARGING")
+            .map(|v| v == "1")
+            .unwrap_or(false);
+        Some(BatterySample {
+            level: level.clamp(0.0, 1.0),
+            charging,
+        })
+    });
+
     // Safety filter: exclude entries with zero/negligible total size
     // (catches any virtual fs lines that slipped past the script filter)
     disks.retain(|d| d.total_bytes >= 1024 * 1024);
@@ -225,6 +337,7 @@ pub fn remote_snapshot_from_kv(raw: &str) -> Result<SystemSnapshot> {
         net_tx_rate: tx_rate,
         disks,
         total_swap: swap_total,
+        battery,
     })
 }
 

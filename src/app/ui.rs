@@ -1,6 +1,6 @@
 use gpui::{
-    Context, ElementId, Focusable as _, FontWeight, Hsla, InteractiveElement as _, IntoElement,
-    MouseButton, MouseDownEvent, ParentElement as _, PathBuilder, Pixels, Render,
+    Context, ElementId, Focusable as _, FontWeight, Hsla, InteractiveElement as _,
+    IntoElement, MouseButton, MouseDownEvent, ParentElement as _, PathBuilder, Pixels, Render,
     StatefulInteractiveElement as _, Styled as _, Window, canvas, div, hsla, point,
     prelude::FluentBuilder as _, px, relative, rems, uniform_list,
 };
@@ -1278,6 +1278,73 @@ impl Ashell {
             None
         };
 
+        let battery_color = |level: f32, charging: bool| -> Hsla {
+            if charging || level > 0.2 {
+                mem_color
+            } else if level > 0.1 {
+                Hsla {
+                    h: 45.0 / 360.0,
+                    s: 0.8,
+                    l: 0.55,
+                    a: 1.0,
+                }
+            } else {
+                Hsla {
+                    h: 0.0,
+                    s: 0.8,
+                    l: 0.55,
+                    a: 1.0,
+                }
+            }
+        };
+
+        let battery_card = self.system.battery.as_ref().map(|battery| {
+            let level = battery.level.clamp(0.0, 1.0);
+            let color = battery_color(level, battery.charging);
+            v_flex()
+                .min_w(card_min_w)
+                .flex_1()
+                .h_full()
+                .px_1()
+                .py_1()
+                .gap_0p5()
+                .child(
+                    h_flex()
+                        .w_full()
+                        .items_center()
+                        .child(
+                            div()
+                                .text_size(rems(0.833))
+                                .font_weight(FontWeight::SEMIBOLD)
+                                .text_color(color)
+                                .child(t!("battery").to_string()),
+                        )
+                        .child(div().flex_1())
+                        .child(
+                            h_flex()
+                                .gap_1()
+                                .child(
+                                    div()
+                                        .text_size(rems(0.833))
+                                        .text_color(muted_fg)
+                                        .child(format!("{:.0}%", level * 100.0)),
+                                )
+                                .when(battery.charging, |this| {
+                                    this.child(
+                                        div().text_size(rems(0.75)).text_color(color).child("⚡"),
+                                    )
+                                }),
+                        ),
+                )
+                .child(
+                    Progress::new("battery-progress")
+                        .value(level * 100.0)
+                        .color(color)
+                        .with_size(px(5.))
+                        .w_full(),
+                )
+        });
+
         let mut panel = h_flex()
             .h(px(80.))
             .w_full()
@@ -1290,6 +1357,9 @@ impl Ashell {
 
         panel = panel.child(cpu_card);
         panel = panel.child(mem_card);
+        if let Some(card) = battery_card {
+            panel = panel.child(card);
+        }
         if let Some(card) = net_card {
             panel = panel.child(card);
         }
@@ -1310,6 +1380,26 @@ impl Ashell {
         let disk_color = cx.theme().chart_5;
         let net_color = cx.theme().chart_4;
         let muted_fg = cx.theme().muted_foreground;
+
+        let battery_color = |level: f32, charging: bool| -> Hsla {
+            if charging || level > 0.2 {
+                mem_color
+            } else if level > 0.1 {
+                Hsla {
+                    h: 45.0 / 360.0,
+                    s: 0.8,
+                    l: 0.55,
+                    a: 1.0,
+                }
+            } else {
+                Hsla {
+                    h: 0.0,
+                    s: 0.8,
+                    l: 0.55,
+                    a: 1.0,
+                }
+            }
+        };
 
         v_flex()
             .gap_4()
@@ -1369,6 +1459,49 @@ impl Ashell {
                             .w_full(),
                     ),
             )
+            .when_some(self.system.battery.clone(), |this, battery| {
+                let level = battery.level.clamp(0.0, 1.0);
+                let color = battery_color(level, battery.charging);
+                this.child(
+                    v_flex()
+                        .gap_1()
+                        .child(
+                            h_flex()
+                                .justify_between()
+                                .child(
+                                    div()
+                                        .text_size(rems(0.85))
+                                        .text_color(color)
+                                        .child(t!("battery").to_string()),
+                                )
+                                .child(
+                                    h_flex()
+                                        .gap_1()
+                                        .child(
+                                            div()
+                                                .text_size(rems(0.85))
+                                                .text_color(muted_fg)
+                                                .child(format!("{:.1}%", level * 100.0)),
+                                        )
+                                        .when(battery.charging, |this| {
+                                            this.child(
+                                                div()
+                                                    .text_size(rems(0.75))
+                                                    .text_color(color)
+                                                    .child("⚡"),
+                                            )
+                                        }),
+                                ),
+                        )
+                        .child(
+                            Progress::new("sidebar-battery")
+                                .value(level * 100.0)
+                                .color(color)
+                                .with_size(px(4.))
+                                .w_full(),
+                        ),
+                )
+            })
             .child(
                 v_flex()
                     .gap_1()
@@ -1622,11 +1755,11 @@ impl Ashell {
                 this.child(self.render_sidebar_monitoring_panel(cx))
             })
             .child(
-                Button::new("open-ssh-panel")
+                Button::new("power-button")
                     .primary()
-                    .label(t!("add_ssh").to_string())
+                    .label(t!("power").to_string())
                     .on_click(
-                        cx.listener(|this, _, window, cx| this.open_new_ssh_dialog(window, cx)),
+                        cx.listener(|this, _, window, cx| this.show_power_dialog(window, cx)),
                     ),
             )
             .child(
@@ -1984,7 +2117,7 @@ impl Ashell {
     ) -> impl IntoElement {
         let is_macos = cfg!(target_os = "macos");
         let is_fullscreen = window.is_fullscreen();
-        
+
         let is_active = cx.active_window() == Some(window.window_handle());
 
         h_flex()
@@ -1999,9 +2132,17 @@ impl Ashell {
                         .id("window-close")
                         .size(px(12.))
                         .rounded_full()
-                        .bg(if is_active { hsla(3.0 / 360.0, 1.0, 0.67, 1.0) } else { hsla(0.0, 0.0, 0.8, 1.0) }) // Red or Inactive Grey
-                        .group_hover("window-controls", |s| s.bg(hsla(3.0 / 360.0, 1.0, 0.67, 1.0)))
-                        .when(!is_macos, |this| this.window_control_area(gpui::WindowControlArea::Close))
+                        .bg(if is_active {
+                            hsla(3.0 / 360.0, 1.0, 0.67, 1.0)
+                        } else {
+                            hsla(0.0, 0.0, 0.8, 1.0)
+                        }) // Red or Inactive Grey
+                        .group_hover("window-controls", |s| {
+                            s.bg(hsla(3.0 / 360.0, 1.0, 0.67, 1.0))
+                        })
+                        .when(!is_macos, |this| {
+                            this.window_control_area(gpui::WindowControlArea::Close)
+                        })
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.save_layout_state(window, cx);
                             window.remove_window();
@@ -2020,7 +2161,7 @@ impl Ashell {
                                 .text_color(hsla(3.0 / 360.0, 1.0, 0.15, 0.7))
                                 .opacity(0.0)
                                 .group_hover("window-controls", |s| s.opacity(1.0))
-                                .child("✕")
+                                .child("✕"),
                         ),
                 )
                 .child(
@@ -2028,9 +2169,17 @@ impl Ashell {
                         .id("window-minimize")
                         .size(px(12.))
                         .rounded_full()
-                        .bg(if is_active { hsla(39.0 / 360.0, 1.0, 0.59, 1.0) } else { hsla(0.0, 0.0, 0.8, 1.0) }) // Yellow or Inactive Grey
-                        .group_hover("window-controls", |s| s.bg(hsla(39.0 / 360.0, 1.0, 0.59, 1.0)))
-                        .when(!is_macos, |this| this.window_control_area(gpui::WindowControlArea::Min))
+                        .bg(if is_active {
+                            hsla(39.0 / 360.0, 1.0, 0.59, 1.0)
+                        } else {
+                            hsla(0.0, 0.0, 0.8, 1.0)
+                        }) // Yellow or Inactive Grey
+                        .group_hover("window-controls", |s| {
+                            s.bg(hsla(39.0 / 360.0, 1.0, 0.59, 1.0))
+                        })
+                        .when(!is_macos, |this| {
+                            this.window_control_area(gpui::WindowControlArea::Min)
+                        })
                         .on_click(|_, window, _| window.minimize_window())
                         .hover(|s| s.bg(hsla(39.0 / 360.0, 1.0, 0.49, 1.0)))
                         .active(|s| s.bg(hsla(39.0 / 360.0, 1.0, 0.39, 1.0)))
@@ -2046,7 +2195,7 @@ impl Ashell {
                                 .text_color(hsla(39.0 / 360.0, 1.0, 0.15, 0.8))
                                 .opacity(0.0)
                                 .group_hover("window-controls", |s| s.opacity(1.0))
-                                .child("−")
+                                .child("−"),
                         ),
                 )
                 .child(
@@ -2054,9 +2203,17 @@ impl Ashell {
                         .id("window-maximize")
                         .size(px(12.))
                         .rounded_full()
-                        .bg(if is_active { hsla(127.0 / 360.0, 0.68, 0.47, 1.0) } else { hsla(0.0, 0.0, 0.8, 1.0) }) // Green or Inactive Grey
-                        .group_hover("window-controls", |s| s.bg(hsla(127.0 / 360.0, 0.68, 0.47, 1.0)))
-                        .when(!is_macos, |this| this.window_control_area(gpui::WindowControlArea::Max))
+                        .bg(if is_active {
+                            hsla(127.0 / 360.0, 0.68, 0.47, 1.0)
+                        } else {
+                            hsla(0.0, 0.0, 0.8, 1.0)
+                        }) // Green or Inactive Grey
+                        .group_hover("window-controls", |s| {
+                            s.bg(hsla(127.0 / 360.0, 0.68, 0.47, 1.0))
+                        })
+                        .when(!is_macos, |this| {
+                            this.window_control_area(gpui::WindowControlArea::Max)
+                        })
                         .on_click(|_, window, _| {
                             if window.is_fullscreen() {
                                 window.toggle_fullscreen();
@@ -2081,7 +2238,7 @@ impl Ashell {
                                 .text_color(hsla(127.0 / 360.0, 1.0, 0.15, 0.8))
                                 .opacity(0.0)
                                 .group_hover("window-controls", |s| s.opacity(1.0))
-                                .child("+")
+                                .child("+"),
                         ),
                 )
             })
@@ -2742,6 +2899,7 @@ impl Render for Ashell {
 
         v_flex()
             .id("ashell-root")
+            .relative()
             .size_full()
             .bg(cx.theme().background)
             .text_color(cx.theme().foreground)

@@ -310,7 +310,9 @@ pub(crate) fn open_main_window(cx: &mut App) {
                 tracing::warn!("[ui] window not found in app during close, skipping save layout state.");
                 return true;
             }
-            view_clone.read(cx).save_layout_state(window, cx);
+            view_clone.update(cx, |this, cx| {
+                this.save_layout_state(window, cx);
+            });
             true
         });
 

@@ -15,13 +15,12 @@ async-trait = "0.1"
 chrono = { version = "0.4", features = ["serde"] }
 directories = "5"
 flate2 = "1"
-gpui = { git = "https://github.com/zed-industries/zed" }
-gpui_platform = { git = "https://github.com/zed-industries/zed", features = ["font-kit", "runtime_shaders", "wayland", "x11"] }
-gpui-component = { git = "https://github.com/longbridge/gpui-component", rev = "ca85b5588f5feea021f1ee86cb13703dc6f30ec4" }
-gpui-component-assets = { git = "https://github.com/longbridge/gpui-component", rev = "ca85b5588f5feea021f1ee86cb13703dc6f30ec4" }
-menu = { git = "https://github.com/zed-industries/zed" }
+gpui = { git = "https://github.com/weihuoya/zed", rev = "006325e0ba6255ff2bc602b11fafb8a4964b7b90" }
+gpui_platform = { git = "https://github.com/weihuoya/zed", rev = "006325e0ba6255ff2bc602b11fafb8a4964b7b90", features = ["font-kit", "runtime_shaders", "wayland", "x11"] }
+gpui-component = { git = "https://github.com/weihuoya/gpui-component", rev = "ed9fa667de5604640f69c2a95b13e7ac93c2d4e1" }
+gpui-component-assets = { git = "https://github.com/weihuoya/gpui-component", rev = "ed9fa667de5604640f69c2a95b13e7ac93c2d4e1" }
+menu = { git = "https://github.com/weihuoya/zed", rev = "006325e0ba6255ff2bc602b11fafb8a4964b7b90" }
 portable-pty = "0.8"
-rfd = "0.15"
 russh = "0.49"
 russh-keys = "0.49"
 russh-sftp = "2"
@@ -35,7 +34,7 @@ tar = "0.4"
 thiserror = "1"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "io-util", "net", "time", "fs"] }
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["env-filter", "local-time", "time"] }
+tracing-subscriber = { version = "0.3", features = ["env-filter", "local-time", "time", "tracing-log"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 walkdir = "2"
 zip = { version = "2", default-features = false, features = ["deflate"] }
@@ -59,6 +58,12 @@ opt-level = 3
 lto = "thin"
 codegen-units = 1
 strip = true
+
+[patch."https://github.com/zed-industries/zed"]
+gpui = { git = "https://github.com/weihuoya/zed", rev = "006325e0ba6255ff2bc602b11fafb8a4964b7b90" }
+gpui_platform = { git = "https://github.com/weihuoya/zed", rev = "006325e0ba6255ff2bc602b11fafb8a4964b7b90" }
+gpui_web = { git = "https://github.com/weihuoya/zed", rev = "006325e0ba6255ff2bc602b11fafb8a4964b7b90" }
+gpui_macros = { git = "https://github.com/weihuoya/zed", rev = "006325e0ba6255ff2bc602b11fafb8a4964b7b90" }
 
 [build-dependencies]
 winres = "0.1.12"

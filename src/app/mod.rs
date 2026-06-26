@@ -198,6 +198,7 @@ pub(crate) enum DialogKind {
     Transfers,
     NewSsh,
     PromptRequest,
+    Power,
 }
 
 pub(crate) struct Ashell {
